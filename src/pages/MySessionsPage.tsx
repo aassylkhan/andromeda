@@ -15,6 +15,7 @@ import {
   Button,
   CircularProgress,
   TableContainer,
+  Stack,
 } from '@mui/material'
 import { Delete as DeleteIcon, Refresh as RefreshIcon } from '@mui/icons-material'
 import { useSnackbar } from 'notistack'
@@ -78,148 +79,94 @@ export function MySessionsPage() {
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      <Box>
-        <Typography
-          variant="h1"
-          sx={{
-            fontWeight: 700,
-            mb: 2,
-            color: '#0F172A',
-            fontSize: '2rem',
-          }}
-        >
-          Мои сессии
-        </Typography>
-      </Box>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <Typography variant="h1" sx={{ fontWeight: 800, color: '#141A21', fontSize: '2rem' }}>
+        Мои сессии
+      </Typography>
 
-      <Paper
-        elevation={2}
-        sx={{
-          p: 4,
-          borderRadius: 2,
-          border: '1px solid #E2E8F0',
-          backgroundColor: 'rgba(255, 255, 255, 0.85)',
-          backdropFilter: 'blur(10px)',
-        }}
-      >
-        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 3, flexWrap: 'wrap' }}>
-          <Button
-            variant="outlined"
-            startIcon={<RefreshIcon />}
-            size="large"
-            onClick={() => void fetchSessions()}
-            disabled={loading}
-            sx={{
-              whiteSpace: 'nowrap',
-              px: 3.5,
-              py: 1.5,
-              borderRadius: '8px',
-              borderWidth: '1px',
-              borderColor: '#E2E8F0',
-              '&:hover': {
-                borderWidth: '1px',
-              },
-            }}
-          >
+      {/* Toolbar */}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+        <Stack direction="row" spacing={2} sx={{ ml: 'auto' }}>
+          <Button variant="outlined" startIcon={<RefreshIcon />} onClick={() => void fetchSessions()} disabled={loading} sx={{ height: 56, borderRadius: 2, px: 3 }}>
             Обновить
           </Button>
-          <Button
-            variant="contained"
-            onClick={() => void handleDeleteOthers()}
-            disabled={loading || sessions.length === 0}
-            size="large"
-          >
+
+          <Button variant="contained" onClick={() => void handleDeleteOthers()} disabled={loading || sessions.length === 0} sx={{ height: 56, borderRadius: 2, px: 3 }}>
             Завершить все кроме текущей
           </Button>
-        </Box>
+        </Stack>
+      </Box>
 
+      <Paper sx={{ bgcolor: '#fff', p: 0, borderRadius: 2, boxShadow: '0 0 2px 0 rgba(145,158,171,0.20), 0 12px 24px -4px rgba(145,158,171,0.12)', overflow: 'hidden' }}>
         {error && (
-          <Alert
-            severity="error"
-            sx={{
-              mb: 3,
-              borderRadius: '8px',
-              border: '2px solid',
-              borderColor: 'error.light',
-            }}
-          >
-            {error}
-          </Alert>
+          <Box sx={{ p: 3, pb: 0 }}>
+            <Alert severity="error" sx={{ borderRadius: 2 }}>
+              {error}
+            </Alert>
+          </Box>
         )}
 
         <Box sx={{ position: 'relative', minHeight: 400 }}>
           {loading && (
-            <Box
-              sx={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: 'rgba(255, 255, 255, 0.8)',
-                backdropFilter: 'blur(4px)',
-                zIndex: 1,
-              }}
-            >
+            <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF', zIndex: 1 }}>
               <CircularProgress size={48} thickness={4} />
             </Box>
           )}
 
-          <TableContainer>
-            <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Создана</TableCell>
-                <TableCell>Последний визит</TableCell>
-                <TableCell>IP</TableCell>
-                <TableCell>User-Agent</TableCell>
-                <TableCell align="center">Текущая</TableCell>
-                <TableCell align="right">Действия</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {sessions.map((session) => (
-                <TableRow key={session.sid} hover selected={session.isCurrent}>
-                  <TableCell>{formatDate(session.createdAt)}</TableCell>
-                  <TableCell>{formatDate(session.lastSeenAt)}</TableCell>
-                  <TableCell>{session.ip || '-'}</TableCell>
-                  <TableCell sx={{ maxWidth: 220, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    <Tooltip title={session.userAgent}>
-                      <span>{session.userAgent || '-'}</span>
-                    </Tooltip>
-                  </TableCell>
-                  <TableCell align="center">
-                    {session.isCurrent ? <Chip label="Текущая" color="success" size="small" /> : <Chip label="Другая" size="small" />}
-                  </TableCell>
-                  <TableCell align="right">
-                    <Tooltip title={session.isCurrent ? 'Нельзя удалить текущую сессию' : 'Удалить сессию'}>
-                      <span>
-                        <IconButton
-                          color="error"
-                          size="small"
-                          disabled={session.isCurrent || deletingSid === session.sid || loading}
-                          onClick={() => void handleDelete(session.sid)}
-                        >
-                          {deletingSid === session.sid ? <CircularProgress size={18} /> : <DeleteIcon />}
-                        </IconButton>
-                      </span>
-                    </Tooltip>
-                  </TableCell>
+          <TableContainer sx={{ overflow: 'hidden' }}>
+            <Table sx={{ bgcolor: '#FFFFFF' }}>
+              <TableHead>
+                <TableRow sx={{ bgcolor: '#F3F6FB', '& .MuiTableCell-root': { bgcolor: '#F3F6FB', fontWeight: 600, fontSize: '0.875rem', color: '#637381', borderBottom: '1px solid rgba(145,158,171,0.20)', py: 1.5, px: 3 } }}>
+                  <TableCell>Создана</TableCell>
+                  <TableCell>Последний визит</TableCell>
+                  <TableCell>IP</TableCell>
+                  <TableCell>User-Agent</TableCell>
+                  <TableCell align="center">Текущая</TableCell>
+                  <TableCell align="right">Действия</TableCell>
                 </TableRow>
-              ))}
-              {sessions.length === 0 && !loading && (
-                <TableRow>
-                  <TableCell colSpan={7} align="center" sx={{ py: 6, color: 'text.secondary' }}>
-                    Нет активных сессий
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>          </TableContainer>        </Box>
+              </TableHead>
+
+              <TableBody>
+                {sessions.map((session) => (
+                  <TableRow key={session.sid} hover selected={session.isCurrent} sx={{ '& td': { borderBottom: '1px solid rgba(145,158,171,0.12)', px: 3 } }}>
+                    <TableCell>{formatDate(session.createdAt)}</TableCell>
+                    <TableCell>{formatDate(session.lastSeenAt)}</TableCell>
+                    <TableCell>{session.ip || '-'}</TableCell>
+                    <TableCell sx={{ maxWidth: 220, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <Tooltip title={session.userAgent}>
+                        <span>{session.userAgent || '-'}</span>
+                      </Tooltip>
+                    </TableCell>
+                    <TableCell align="center">
+                      {session.isCurrent ? (
+                        <Chip label="Текущая" sx={{ height: 24, borderRadius: 999, fontSize: 12, fontWeight: 700, bgcolor: '#22C55E', color: '#fff' }} />
+                      ) : (
+                        <Chip label="Другая" sx={{ height: 24, borderRadius: 999, fontSize: 12, fontWeight: 700, bgcolor: 'rgba(145,158,171,0.18)', color: '#637381' }} />
+                      )}
+                    </TableCell>
+                    <TableCell align="right">
+                      <Tooltip title={session.isCurrent ? 'Нельзя удалить текущую сессию' : 'Удалить сессию'}>
+                        <span>
+                          <IconButton color="error" size="small" disabled={session.isCurrent || deletingSid === session.sid || loading} onClick={() => void handleDelete(session.sid)}>
+                            {deletingSid === session.sid ? <CircularProgress size={18} /> : <DeleteIcon />}
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+                    </TableCell>
+                  </TableRow>
+                ))}
+
+                {sessions.length === 0 && !loading && (
+                  <TableRow>
+                    <TableCell colSpan={7} align="center" sx={{ py: 6, color: 'text.secondary' }}>
+                      Нет активных сессий
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Box>
       </Paper>
     </Box>
   )

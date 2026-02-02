@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import {
-  AppBar,
   Box,
   CssBaseline,
   Drawer,
@@ -11,35 +10,45 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  Toolbar,
-  useMediaQuery,
-  useTheme,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogContentText,
   DialogActions,
   Button,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material'
 import {
-  Menu as MenuIcon,
   People as PeopleIcon,
   Logout as LogoutIcon,
   EventNote as EventNoteIcon,
   ListAlt as ListAltIcon,
   Settings as SettingsIcon,
 } from '@mui/icons-material'
-import logo from '../../assets/yadro.png'
+import logo from '../../assets/Yadro by Andromeda-4.png'
 import { useAuthStore } from '../../entities/auth'
 
-const DRAWER_WIDTH = 280
-const APPBAR_HEIGHT = 72
+const DRAWER_WIDTH = 300
+
+// Newton tokens
+const NAV = {
+  bg: '#FFFFFF',
+  border: 'rgba(145,158,171,0.08)',
+  itemHeight: 44,
+  itemRadius: 6,
+  itemColor: '#637381',
+  activeColor: '#1877F2',
+  activeBg: 'rgba(24,119,242,0.08)',
+  hoverBg: 'rgba(24,119,242,0.16)',
+}
 
 export function AppLayout() {
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
   const [mobileOpen, setMobileOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
+
   const navigate = useNavigate()
   const location = useLocation()
   const user = useAuthStore((state) => state.user)
@@ -63,9 +72,18 @@ export function AppLayout() {
   })
 
   const drawer = (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', pt: 3 }}>
-      {/* Логотип */}
-      <Box sx={{ px: 3, pb: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      {/* Logo */}
+      <Box
+        sx={{
+          px: 2.5, // 20px
+          pt: 2.5,
+          pb: 2,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
         <Box
           component="img"
           src={logo}
@@ -77,58 +95,36 @@ export function AppLayout() {
             height: 'auto',
             objectFit: 'contain',
             cursor: 'pointer',
-            transition: 'transform 0.3s, opacity 0.2s',
-            '&:hover': {
-              transform: 'scale(1.08)',
-              opacity: 0.9,
-            },
           }}
         />
       </Box>
 
-      {/* Диалог настроек (данные о пользователе) */}
+      {/* Settings dialog */}
       <Dialog open={settingsOpen} onClose={() => setSettingsOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>Мои данные</DialogTitle>
         <DialogContent dividers>
           <DialogContentText sx={{ mb: 2 }}>
             Просмотр информации вашего профиля.
           </DialogContentText>
+
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Box sx={{ color: 'text.secondary' }}>ID</Box>
-              <Box>{user?.userId ?? '—'}</Box>
-            </Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Box sx={{ color: 'text.secondary' }}>Фамилия</Box>
-              <Box>{user?.lastName ?? '—'}</Box>
-            </Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Box sx={{ color: 'text.secondary' }}>Имя</Box>
-              <Box>{user?.firstName ?? '—'}</Box>
-            </Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Box sx={{ color: 'text.secondary' }}>Email</Box>
-              <Box>{user?.email ?? '—'}</Box>
-            </Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Box sx={{ color: 'text.secondary' }}>Телефон</Box>
-              <Box>{user?.phoneNumber ?? '—'}</Box>
-            </Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Box sx={{ color: 'text.secondary' }}>Роли</Box>
-              <Box>{user?.roles?.join(', ') ?? '—'}</Box>
-            </Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Box sx={{ color: 'text.secondary' }}>Доступ</Box>
-              <Box>
-                {user?.sections
+            <Row label="ID" value={user?.userId ?? '—'} />
+            <Row label="Фамилия" value={user?.lastName ?? '—'} />
+            <Row label="Имя" value={user?.firstName ?? '—'} />
+            <Row label="Email" value={user?.email ?? '—'} />
+            <Row label="Телефон" value={user?.phoneNumber ?? '—'} />
+            <Row label="Роли" value={user?.roles?.join(', ') ?? '—'} />
+            <Row
+              label="Доступ"
+              value={
+                user?.sections
                   ? Object.entries(user.sections)
                       .filter(([, val]) => val)
                       .map(([key]) => key)
                       .join(', ') || '—'
-                  : '—'}
-              </Box>
-            </Box>
+                  : '—'
+              }
+            />
           </Box>
         </DialogContent>
         <DialogActions>
@@ -136,47 +132,87 @@ export function AppLayout() {
         </DialogActions>
       </Dialog>
 
-      {/* Меню */}
-      <Box sx={{ flexGrow: 1, overflow: 'auto', px: 1 }}>
-        <List>
-          {visibleMenuItems.map((item) => (
-            <ListItem key={item.label} disablePadding>
-              <ListItemButton
-                onClick={() => {
-                  navigate(item.path)
-                  if (isMobile) setMobileOpen(false)
-                }}
-                selected={location.pathname === item.path}
-              >
-                <ListItemIcon sx={{ minWidth: 40 }}>{item.icon}</ListItemIcon>
-                <ListItemText 
-                  primary={item.label}
-                  primaryTypographyProps={{
-                    fontSize: '0.9375rem',
-                    fontWeight: 500,
+      {/* Menu */}
+      <Box sx={{ flexGrow: 1, overflow: 'auto', px: 2.5, py: 1 }}>
+        <List sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+          {visibleMenuItems.map((item) => {
+            const selected = location.pathname === item.path
+            return (
+              <ListItem key={item.label} disablePadding>
+                <ListItemButton
+                  onClick={() => {
+                    navigate(item.path)
+                    if (isMobile) setMobileOpen(false)
                   }}
-                />
-              </ListItemButton>
-            </ListItem>
-          ))}
+                  selected={selected}
+                  sx={{
+                    minHeight: NAV.itemHeight,
+                    borderRadius: `${NAV.itemRadius}px`,
+                    pl: 2,   // 16px
+                    pr: 1.5, // 12px
+                    py: 1,   // 8px
+                    gap: 2,  // 16px
+                    color: NAV.itemColor,
+                    '&:hover': { bgcolor: NAV.hoverBg },
+
+                    '&.Mui-selected, &.Mui-selected:hover': {
+                      bgcolor: NAV.activeBg,
+                      color: NAV.activeColor,
+                      fontWeight: 600,
+                    },
+                  }}
+                >
+                  <ListItemIcon
+                    sx={{
+                      minWidth: 0,
+                      width: 24,
+                      height: 24,
+                      display: 'grid',
+                      placeItems: 'center',
+                      color: 'inherit',
+                    }}
+                  >
+                    {item.icon}
+                  </ListItemIcon>
+
+                  <ListItemText
+                    primary={item.label}
+                    primaryTypographyProps={{
+                      fontSize: 14,
+                      fontWeight: selected ? 600 : 500,
+                      lineHeight: '22px',
+                    }}
+                  />
+                </ListItemButton>
+              </ListItem>
+            )
+          })}
         </List>
       </Box>
 
-      {/* Настройки и выход */}
-      <Box sx={{ p: 2, borderTop: '1px solid', borderColor: 'divider', display: 'flex', gap: 1 }}>
+      {/* Bottom actions */}
+      <Box
+        sx={{
+          px: 2.5,
+          py: 2,
+          borderTop: `1px solid ${NAV.border}`,
+          display: 'flex',
+          gap: 1,
+        }}
+      >
         <IconButton
           onClick={() => setSettingsOpen(true)}
           sx={{
-            borderRadius: '12px',
-            color: 'text.primary',
-            backgroundColor: 'rgba(102, 126, 234, 0.08)',
-            '&:hover': {
-              backgroundColor: 'rgba(102, 126, 234, 0.16)',
-            },
+            width: 44,
+            height: 44,
+            borderRadius: 2,
+            color: NAV.itemColor,
+            bgcolor: 'rgba(145,158,171,0.08)',
+            '&:hover': { bgcolor: 'rgba(145,158,171,0.12)' },
           }}
           aria-label="Мои данные"
         >
-          <SettingsIcon />
+          <SettingsIcon fontSize="small" />
         </IconButton>
 
         <ListItemButton
@@ -186,23 +222,21 @@ export function AppLayout() {
             if (isMobile) setMobileOpen(false)
           }}
           sx={{
-            borderRadius: '12px',
-            color: 'error.main',
+            minHeight: 44,
+            borderRadius: 2,
+            px: 2,
+            gap: 2,
             flex: 1,
-            '&:hover': {
-              backgroundColor: 'rgba(239, 68, 68, 0.08)',
-            },
+            color: '#B71D18',
+            '&:hover': { bgcolor: 'rgba(255,86,48,0.08)' },
           }}
         >
-          <ListItemIcon sx={{ color: 'error.main', minWidth: 40 }}>
-            <LogoutIcon />
+          <ListItemIcon sx={{ minWidth: 0, width: 24, height: 24, color: 'inherit' }}>
+            <LogoutIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText
             primary="Выйти"
-            primaryTypographyProps={{
-              fontSize: '0.9375rem',
-              fontWeight: 600,
-            }}
+            primaryTypographyProps={{ fontSize: 14, fontWeight: 600 }}
           />
         </ListItemButton>
       </Box>
@@ -214,19 +248,7 @@ export function AppLayout() {
       sx={{
         display: 'flex',
         minHeight: '100vh',
-        backgroundColor: 'background.default',
-        position: 'relative',
-        overflow: 'hidden',
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          inset: 0,
-          background:
-            `radial-gradient(900px 500px at 10% 10%, rgba(37,99,235,.18), transparent 60%),
-             radial-gradient(900px 500px at 90% 15%, rgba(34,211,238,.14), transparent 60%),
-             radial-gradient(900px 500px at 60% 90%, rgba(167,139,250,.14), transparent 60%)`,
-          pointerEvents: 'none',
-        },
+        bgcolor: '#F9FAFB', // ✅ Newton: без overlay/прозрачности
       }}
     >
       <CssBaseline />
@@ -240,7 +262,12 @@ export function AppLayout() {
             ModalProps={{ keepMounted: true }}
             sx={{
               display: { xs: 'block', md: 'none' },
-              '& .MuiDrawer-paper': { boxSizing: 'border-box', width: DRAWER_WIDTH },
+              '& .MuiDrawer-paper': {
+                boxSizing: 'border-box',
+                width: DRAWER_WIDTH,
+                bgcolor: NAV.bg,
+                borderRight: `1px solid ${NAV.border}`,
+              },
             }}
           >
             {drawer}
@@ -251,7 +278,12 @@ export function AppLayout() {
             open
             sx={{
               display: { xs: 'none', md: 'block' },
-              '& .MuiDrawer-paper': { boxSizing: 'border-box', width: DRAWER_WIDTH },
+              '& .MuiDrawer-paper': {
+                boxSizing: 'border-box',
+                width: DRAWER_WIDTH,
+                bgcolor: NAV.bg,
+                borderRight: `1px solid ${NAV.border}`,
+              },
             }}
           >
             {drawer}
@@ -269,6 +301,15 @@ export function AppLayout() {
       >
         <Outlet />
       </Box>
+    </Box>
+  )
+}
+
+function Row({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2 }}>
+      <Box sx={{ color: 'text.secondary' }}>{label}</Box>
+      <Box sx={{ textAlign: 'right' }}>{value}</Box>
     </Box>
   )
 }

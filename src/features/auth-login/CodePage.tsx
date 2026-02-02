@@ -85,7 +85,7 @@ export function CodePage() {
             p: 4,
             width: '100%',
             borderRadius: 2,
-            border: '1px solid #E2E8F0',
+            border: '1px solid rgba(145, 158, 171, 0.16)',
           }}
         >
           <Box sx={{ textAlign: 'center', mb: 4 }}>

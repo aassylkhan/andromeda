@@ -18,14 +18,18 @@ import {
   TableContainer,
   TablePagination,
   Chip,
+  InputAdornment,
+  Stack,
 } from '@mui/material'
 import {
   Add as AddIcon,
   FilterList as FilterIcon,
   MoreVert as MoreVertIcon,
+  Search as SearchIcon,
 } from '@mui/icons-material'
 import { useEmployeeStore } from '../../entities/employee'
 import { useAuthStore } from '../../entities/auth'
+import { hasAnyRole } from '../../shared/utils/roleUtils'
 import { useDebounce } from '../../shared/hooks'
 import { formatPhoneNumber } from './utils'
 import type { Employee } from '../../entities/employee'
@@ -35,14 +39,11 @@ import {
   EditPhoneDialog,
   FilterDialog,
 } from '../../features/employee-dialogs'
-import {
-  toggleEmployeeStatus,
-  makeHead,
-} from '../../entities/employee'
+import { toggleEmployeeStatus, makeHead } from '../../entities/employee'
 
 export default function EmployeesPage() {
   const user = useAuthStore((state) => state.user)
-  const isDirector = user?.roles?.includes('director')
+  const isDirector = hasAnyRole(user ?? null, ['director'])
 
   const {
     items,
@@ -84,6 +85,7 @@ export default function EmployeesPage() {
 
   const handleSearchChange = (value: string) => {
     setQ(value)
+    setPage(0)
   }
 
   const handleFilterApply = (role: string, status: string) => {
@@ -136,89 +138,105 @@ export default function EmployeesPage() {
     handleMenuClose()
   }
 
-  const handleRefetch = () => {
-    refetch()
-  }
-
   const itemsSafe = Array.isArray(items) ? items : []
   const sortedItems = [...itemsSafe]
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      <Box>
-        <Typography
-          variant="h1"
-          sx={{
-            fontWeight: 700,
-            mb: 2,
-            color: '#0F172A',
-            fontSize: '2rem',
-          }}
-        >
-          Сотрудники
-        </Typography>
-      </Box>
-
-      <Paper
-        elevation={2}
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      {/* Title */}
+      <Typography
+        variant="h1"
         sx={{
-          p: 4,
-          borderRadius: 2,
-          border: '1px solid #E2E8F0',
-          backgroundColor: 'rgba(255, 255, 255, 0.85)',
-          backdropFilter: 'blur(10px)',
+          fontWeight: 800,
+          color: '#141A21',
+          fontSize: '2rem',
         }}
       >
-        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 3, flexWrap: 'wrap' }}>
-          <TextField
-            placeholder="Поиск сотрудников..."
-            variant="outlined"
-            size="medium"
-            value={q}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            sx={{ flexGrow: 1, minWidth: 280, maxWidth: 480 }}
-          />
+        Сотрудники
+      </Typography>
+
+      {/* Toolbar */}
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 2,
+          flexWrap: 'wrap',
+        }}
+      >
+        <TextField
+          placeholder="Поиск сотрудников..."
+          variant="outlined"
+          value={q}
+          onChange={(e) => handleSearchChange(e.target.value)}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon sx={{ color: 'text.disabled' }} />
+              </InputAdornment>
+            ),
+          }}
+          sx={{
+            flex: '1 1 520px',
+            maxWidth: 750,
+            '& .MuiOutlinedInput-root': {
+              height: 56,
+              borderRadius: 2,
+              bgcolor: '#FFFFFF',
+            },
+          }}
+        />
+
+        <Stack direction="row" spacing={2} sx={{ ml: 'auto' }}>
           <Button
             variant="outlined"
             startIcon={<FilterIcon />}
-            size="large"
             onClick={() => setFilterDialogOpen(true)}
             sx={{
+              height: 56,
+              borderRadius: 2,
+              px: 3,
               whiteSpace: 'nowrap',
-              px: 3.5,
-              py: 1.5,
-              borderRadius: '8px',
-              borderWidth: '1px',
-              borderColor: '#E2E8F0',
-              '&:hover': {
-                borderWidth: '1px',
-              },
+              borderColor: 'rgba(145,158,171,0.20)',
+              '&:hover': { borderColor: 'rgba(145,158,171,0.35)' },
             }}
           >
             Фильтр
           </Button>
+
           <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => setCreateDialogOpen(true)}
-            size="large"
+            sx={{
+              height: 56,
+              borderRadius: 2,
+              px: 4,
+              whiteSpace: 'nowrap',
+            }}
           >
             Добавить
           </Button>
-        </Box>
+        </Stack>
+      </Box>
 
+      {/* ✅ ONE surface only — no inner “card” effect */}
+      <Paper
+        sx={{
+          bgcolor: '#fff',
+          p: 0, // ✅ ключ: убрали padding, чтобы таблица была как в Newton
+          borderRadius: 2,
+          boxShadow:
+            '0 0 2px 0 rgba(145,158,171,0.20), 0 12px 24px -4px rgba(145,158,171,0.12)',
+          overflow: 'hidden',
+        }}
+      >
         {error && (
-          <Alert
-            severity="error"
-            sx={{
-              mb: 3,
-              borderRadius: '8px',
-              border: '2px solid',
-              borderColor: 'error.light',
-            }}
-          >
-            {error}
-          </Alert>
+          <Box sx={{ p: 3, pb: 0 }}>
+            <Alert severity="error" sx={{ borderRadius: 2 }}>
+              {error}
+            </Alert>
+          </Box>
         )}
 
         <Box sx={{ position: 'relative', minHeight: 400 }}>
@@ -226,15 +244,11 @@ export default function EmployeesPage() {
             <Box
               sx={{
                 position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
+                inset: 0,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                backgroundColor: 'rgba(255, 255, 255, 0.8)',
-                backdropFilter: 'blur(4px)',
+                backgroundColor: '#FFFFFF',
                 zIndex: 1,
               }}
             >
@@ -242,10 +256,23 @@ export default function EmployeesPage() {
             </Box>
           )}
 
-          <TableContainer>
-            <Table>
+          <TableContainer sx={{ overflow: 'hidden' }}>
+            <Table sx={{ bgcolor: '#FFFFFF' }}>
               <TableHead>
-                <TableRow>
+                <TableRow
+                  sx={{
+                    bgcolor: '#F3F6FB',
+                    '& .MuiTableCell-root': {
+                      bgcolor: '#F3F6FB',
+                      fontWeight: 600,
+                      fontSize: '0.875rem',
+                      color: '#637381',
+                      borderBottom: '1px solid rgba(145,158,171,0.20)',
+                      py: 1.5,
+                      px: 3, // ✅ боковые отступы как в Newton
+                    },
+                  }}
+                >
                   <TableCell>ID</TableCell>
                   <TableCell>Фамилия</TableCell>
                   <TableCell>Имя</TableCell>
@@ -256,51 +283,67 @@ export default function EmployeesPage() {
                   <TableCell align="right">Действия</TableCell>
                 </TableRow>
               </TableHead>
+
               <TableBody>
-                {sortedItems.map((employee) => (
-                  <TableRow key={employee.userId} hover>
-                    <TableCell>{employee.userId}</TableCell>
-                    <TableCell>{employee.lastName}</TableCell>
-                    <TableCell>{employee.firstName}</TableCell>
-                    <TableCell>{formatPhoneNumber(employee.phoneNumber)}</TableCell>
-                    <TableCell>{employee.iin}</TableCell>
-                    <TableCell>{employee.role}</TableCell>
-                    <TableCell>
-                      <Chip
-                        size="small"
-                        label={employee.status === 'ACTIVE' ? 'Активен' : employee.status === 'INACTIVE' ? 'Неактивен' : `Unknown: ${employee.status}`}
-                        color={employee.status === 'ACTIVE' ? 'success' : employee.status === 'INACTIVE' ? 'error' : 'default'}
-                      />
-                    </TableCell>
-                    <TableCell align="right">
-                      <IconButton
-                        size="small"
-                        onClick={(e) => handleMenuOpen(e, employee)}
-                        aria-label="Открыть действия"
-                      >
-                        <MoreVertIcon />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {sortedItems.map((employee) => {
+                  const isActive = employee.status === 'ACTIVE'
+
+                  return (
+                    <TableRow
+                      key={employee.userId}
+                      hover
+                      sx={{
+                        '& td': {
+                          borderBottom: '1px solid rgba(145,158,171,0.12)',
+                          px: 3, // ✅ боковые отступы как в Newton
+                        },
+                      }}
+                    >
+                      <TableCell>{employee.userId}</TableCell>
+                      <TableCell>{employee.lastName}</TableCell>
+                      <TableCell>{employee.firstName}</TableCell>
+                      <TableCell>{formatPhoneNumber(employee.phoneNumber)}</TableCell>
+                      <TableCell>{employee.iin}</TableCell>
+                      <TableCell>{employee.role}</TableCell>
+                      <TableCell>
+                        <Chip
+                          size="small"
+                          label={isActive ? 'ACTIVE' : 'INACTIVE'}
+                          sx={{
+                            height: 24,
+                            borderRadius: 999,
+                            fontSize: 12,
+                            fontWeight: 700,
+                            ...(isActive
+                              ? { bgcolor: '#22C55E', color: '#fff' }
+                              : { bgcolor: 'rgba(145,158,171,0.18)', color: '#637381' }),
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell align="right">
+                        <IconButton
+                          size="small"
+                          onClick={(e) => handleMenuOpen(e, employee)}
+                          aria-label="Открыть действия"
+                        >
+                          <MoreVertIcon />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
               </TableBody>
             </Table>
           </TableContainer>
         </Box>
 
-        <Menu
-          anchorEl={menuAnchor}
-          open={Boolean(menuAnchor)}
-          onClose={handleMenuClose}
-        >
+        <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={handleMenuClose}>
           <MenuItem onClick={handleEdit}>Редактировать</MenuItem>
           <MenuItem onClick={handleEditPhone}>Редактировать номер</MenuItem>
           <MenuItem onClick={handleToggleStatus}>
             {menuEmployee?.status === 'ACTIVE' ? 'Деактивировать' : 'Активировать'}
           </MenuItem>
-          {isDirector && (
-            <MenuItem onClick={handleMakeHead}>Назначить руководителем</MenuItem>
-          )}
+          {isDirector && <MenuItem onClick={handleMakeHead}>Назначить руководителем</MenuItem>}
         </Menu>
 
         <TablePagination
@@ -312,13 +355,18 @@ export default function EmployeesPage() {
           onRowsPerPageChange={(event) => setSize(parseInt(event.target.value, 10))}
           rowsPerPageOptions={[10, 20, 50]}
           labelRowsPerPage="Строк на странице"
+          sx={{
+            borderTop: '1px solid rgba(145,158,171,0.12)',
+            px: 3, // ✅ низ тоже с внутренними отступами
+            mt: 0,
+          }}
         />
       </Paper>
 
       <CreateEmployeeDialog
         open={createDialogOpen}
         onClose={() => setCreateDialogOpen(false)}
-        onSuccess={handleRefetch}
+        onSuccess={refetch}
       />
 
       <EditEmployeeDialog
@@ -328,7 +376,7 @@ export default function EmployeesPage() {
           setEditDialogOpen(false)
           setSelectedEmployee(null)
         }}
-        onSuccess={handleRefetch}
+        onSuccess={refetch}
       />
 
       <EditPhoneDialog
@@ -338,7 +386,7 @@ export default function EmployeesPage() {
           setEditPhoneDialogOpen(false)
           setSelectedEmployee(null)
         }}
-        onSuccess={handleRefetch}
+        onSuccess={refetch}
       />
 
       <FilterDialog

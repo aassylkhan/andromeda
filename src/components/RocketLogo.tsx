@@ -8,8 +8,8 @@ export function RocketLogo({ size = 64 }: RocketLogoProps) {
   return (
     <Box
       component="img"
-      src="/andromeda-icon.png"
-      alt="Andromeda"
+      src="/Yadro by Andromeda-3.png"
+      alt="Yadro by Andromeda"
       sx={{
         width: size,
         height: size,

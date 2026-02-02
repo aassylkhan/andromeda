@@ -43,7 +43,7 @@ export function Dashboard() {
                 sx={{ 
                   height: '100%',
                   borderRadius: 2,
-                  border: '1px solid #E2E8F0',
+                  border: '1px solid rgba(145, 158, 171, 0.16)',
                   backgroundColor: 'rgba(255, 255, 255, 0.85)',
                   backdropFilter: 'blur(10px)',
                   transition: 'all 0.3s ease',
@@ -90,7 +90,7 @@ export function Dashboard() {
         sx={{
           p: 4,
           borderRadius: 2,
-          border: '1px solid #E2E8F0',
+          border: '1px solid rgba(145, 158, 171, 0.16)',
           background: 'linear-gradient(135deg, rgba(245, 66, 100, 0.04) 0%, rgba(252, 140, 30, 0.04) 100%)',
         }}
       >

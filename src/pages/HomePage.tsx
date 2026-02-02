@@ -31,7 +31,7 @@ export function HomePage() {
           sx={{
             p: 4,
             borderRadius: 2,
-            border: '1px solid #E2E8F0',
+            border: '1px solid rgba(145, 158, 171, 0.16)',
             backgroundColor: 'rgba(255, 255, 255, 0.85)',
             backdropFilter: 'blur(10px)',
           }}

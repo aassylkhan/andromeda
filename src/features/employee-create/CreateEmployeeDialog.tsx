@@ -69,7 +69,7 @@ export function CreateEmployeeDialog({ open, onClose }: CreateEmployeeDialogProp
       PaperProps={{
         sx: {
           borderRadius: 2,
-          border: '1px solid #E2E8F0',
+          border: '1px solid rgba(145, 158, 171, 0.16)',
           boxShadow: '0 10px 40px rgba(245, 66, 100, 0.15)',
         },
       }}
@@ -175,7 +175,7 @@ export function CreateEmployeeDialog({ open, onClose }: CreateEmployeeDialogProp
             py: 1.5,
             borderRadius: '8px',
             borderWidth: '1px',
-            borderColor: '#E2E8F0',
+            borderColor: 'rgba(145, 158, 171, 0.16)',
             '&:hover': {
               borderWidth: '1px',
             },
