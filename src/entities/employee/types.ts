@@ -1,7 +1,19 @@
 export type EmployeeRole = 'EXPERT' | 'MENTOR' | 'TEACHER' | 'ACCOUNTANT' | 'HEAD' | 'DIRECTOR' | 'ADMIN'
 export type EmployeeStatus = 'ACTIVE' | 'INACTIVE'
+export type DocumentType = 'ID_CARD' | 'PASSPORT'
 
-export type ConflictType = 'USER_EXISTS' | 'EMPLOYEE_EXISTS'
+export type EmployeeCreateResultType = 
+  | 'CREATED' 
+  | 'PHONE_TAKEN' 
+  | 'EMAIL_TAKEN' 
+  | 'USER_EXISTS_NOT_EMPLOYEE' 
+  | 'EMPLOYEE_ALREADY_EXISTS'
+
+export type ConflictType = 
+  | 'PHONE_TAKEN' 
+  | 'EMAIL_TAKEN' 
+  | 'USER_EXISTS' 
+  | 'EMPLOYEE_EXISTS'
 
 export type Employee = {
   userId: number
@@ -9,7 +21,8 @@ export type Employee = {
   lastName: string
   phoneNumber: string | null
   email: string | null
-  iin: string
+  pnOrIin: string // ID card or passport number with prefix (iin_... or pn_...)
+  documentType?: DocumentType
   role: EmployeeRole
   status: EmployeeStatus
   preferredLanguage?: string | null
@@ -21,24 +34,37 @@ export type PageResponse<T> = {
   total: number
 }
 
+// Spec: EmployeeCreateRequest
 export interface CreateEmployeeRequest {
   lastName: string
   firstName: string
-  phoneNumber: string
+  documentType: DocumentType // ID_CARD | PASSPORT
+  pnOrIin: string // without prefix; backend will add iin_... or pn_...
+  phoneNumber: string // only digits, no "+"
   email: string
-  iin: string
-  notCitizen: boolean
-  role: 'expert' | 'mentor' | 'teacher' | 'accountant'
+  role: EmployeeRole // mentor|teacher|expert|accountant (any case)
+}
+
+// Spec: EmployeeCreateResultDto
+export interface EmployeeCreateResultDto {
+  type: EmployeeCreateResultType
+  conflictUser?: ConflictUserDto
+  message?: string
+}
+
+export interface ConflictUserDto {
+  id: number
+  lastName: string
+  firstName: string
+  phoneNumber: string
+  pnOrIin: string
+  email?: string
 }
 
 export interface UpdateEmployeeRequest {
-  iin?: string | null
+  pnOrIin?: string | null
   email?: string
-  role?: 'expert' | 'mentor' | 'teacher' | 'accountant' | 'head' | 'director' | 'admin'
-}
-
-export interface UpdatePhoneRequest {
-  phoneNumber: string
+  role?: EmployeeRole
 }
 
 export interface ExistingUserInfo {
@@ -46,7 +72,7 @@ export interface ExistingUserInfo {
   firstName: string
   lastName: string
   phoneNumber: string
-  iin: string
+  pnOrIin: string
 }
 
 export interface ConflictResponse {
@@ -61,24 +87,29 @@ export interface ApiErrorResponse {
   path: string
   status: number
   timestamp: string
+  type?: EmployeeCreateResultType
   userId?: number
-  existingUser?: ExistingUserInfo
+  conflictUser?: ConflictUserDto
   conflictType?: ConflictType
 }
 
-// Specialized error for employee conflicts (400)
+// Specialized error for employee conflicts (400/409)
 export class EmployeesConflictError extends Error {
   status: number
-  userId?: number
-  existingUser?: ExistingUserInfo
+  type?: EmployeeCreateResultType
+  conflictUser?: ConflictUserDto
   conflictType?: ConflictType
 
-  constructor(message: string, status: number, details?: Partial<EmployeesConflictError>) {
+  constructor(
+    message: string,
+    status: number,
+    details?: Partial<EmployeesConflictError>
+  ) {
     super(message)
     this.name = 'EmployeesConflictError'
     this.status = status
-    this.userId = details?.userId
-    this.existingUser = details?.existingUser
+    this.type = details?.type
+    this.conflictUser = details?.conflictUser
     this.conflictType = details?.conflictType
   }
 }

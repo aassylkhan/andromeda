@@ -91,7 +91,7 @@ export function AppLayout() {
           onClick={() => navigate('/employees')}
           sx={{
             width: '100%',
-            maxWidth: 220,
+            maxWidth: 290,
             height: 'auto',
             objectFit: 'contain',
             cursor: 'pointer',
