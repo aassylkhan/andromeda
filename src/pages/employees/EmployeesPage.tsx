@@ -43,13 +43,13 @@ import { FilterModal } from '../../features/employee-dialogs/FilterModal'
 import { EditRoleModal } from '../../features/employee-dialogs/EditRoleModal'
 import { EditPhoneModal } from '../../features/employee-dialogs/EditPhoneModal'
 import { EditEmailModal } from '../../features/employee-dialogs/EditEmailModal'
-import type { EmployeeListItemDto, EmployeeRole, EmployeeStatus } from '../../entities/employee/types'
+import type { Employee, EmployeeRole, EmployeeStatus } from '../../entities/employee/types'
 
 const EmployeesPage: React.FC = () => {
   const { enqueueSnackbar } = useSnackbar()
   const { user } = useAuthStore()
 
-  const [employees, setEmployees] = useState<EmployeeListItemDto[]>([])
+  const [employees, setEmployees] = useState<Employee[]>([])
   const [loading, setLoading] = useState(false)
   const [page, setPage] = useState(0)
   const [size, setSize] = useState(20)
@@ -66,9 +66,9 @@ const EmployeesPage: React.FC = () => {
   const [openEditPhoneModal, setOpenEditPhoneModal] = useState(false)
   const [openEditEmailModal, setOpenEditEmailModal] = useState(false)
 
-  const [editingEmployee, setEditingEmployee] = useState<EmployeeListItemDto | null>(null)
+  const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null)
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
-  const [contextEmployee, setContextEmployee] = useState<EmployeeListItemDto | null>(null)
+  const [contextEmployee, setContextEmployee] = useState<Employee | null>(null)
 
   const isHeadOrDirector = user && hasAnyRole(user, ['head', 'director'])
   const isDirector = user && hasAnyRole(user, ['director'])
@@ -82,7 +82,7 @@ const EmployeesPage: React.FC = () => {
       if (selectedStatuses.length) params.statuses = selectedStatuses.join(',')
 
       const result = await getEmployees(params)
-      const sorted = (result.items as EmployeeListItemDto[]).sort((a, b) =>
+      const sorted = result.items.sort((a, b) =>
         `${a.lastName} ${a.firstName}`.localeCompare(`${b.lastName} ${b.firstName}`),
       )
       setEmployees(sorted)
@@ -99,7 +99,7 @@ const EmployeesPage: React.FC = () => {
     fetchEmployees()
   }, [page, size, debouncedSearch, selectedRoles, selectedStatuses])
 
-  const handleContextMenu = (e: React.MouseEvent<HTMLElement>, emp: EmployeeListItemDto) => {
+  const handleContextMenu = (e: React.MouseEvent<HTMLElement>, emp: Employee) => {
     setAnchorEl(e.currentTarget)
     setContextEmployee(emp)
   }
