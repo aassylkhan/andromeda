@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import type { Employee } from './index'
-import { getEmployees } from './index'
+import { getEmployees, searchEmployees } from './index'
 
 export interface EmployeeStoreState {
   items: Employee[]
@@ -67,16 +67,36 @@ export const useEmployeeStore = create<EmployeeStore>((set, get) => ({
     set({ loading: true, error: undefined })
 
     try {
-      // Use single endpoint with q parameter for search
-      // Per spec: GET /api/v1/employees?q=query&roles=...&statuses=...&page=...&size=...
-      const result = await getEmployees({
-        q: q || undefined,
-        roles: roleFilter ? [roleFilter] : undefined,
-        statuses: statusFilter ? [statusFilter] : undefined,
-        page,
-        size,
+      let items: Employee[]
+      let total: number
+
+      // Use searchEmployees if there's a query, otherwise use getEmployees with filters
+      if (q) {
+        const result = await searchEmployees({
+          q,
+          role: roleFilter || undefined,
+          status: statusFilter || undefined,
+          page,
+          size,
+        })
+        items = result.items
+        total = result.total
+      } else {
+        const result = await getEmployees({
+          role: roleFilter || undefined,
+          status: statusFilter || undefined,
+          page,
+          size,
+        })
+        items = result.items
+        total = result.total
+      }
+
+      set({
+        items,
+        total,
+        loading: false,
       })
-      set({ items: result.items, total: result.total, loading: false })
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Failed to fetch employees'

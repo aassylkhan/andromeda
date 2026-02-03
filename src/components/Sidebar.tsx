@@ -28,7 +28,7 @@ const menuItems = [
     label: 'Сотрудники',
     icon: PeopleIcon,
     sectionKey: 'employees',
-    fallbackRoles: ['head', 'director', 'admin', 'ADMIN'],
+    requiredRoles: ['head', 'director'],
   },
 ]
 
@@ -39,7 +39,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const user = useAuthStore((state) => state.user)
 
-  // Показываем пункт, если есть нужный раздел или подходящая роль (fallback)
+  // Показываем пункт, если есть нужный раздел или подходящая роль
   const visibleMenuItems = menuItems.filter((item) => {
     const hasSectionAccess = item.sectionKey
       ? Boolean(user?.sections?.[item.sectionKey as keyof User['sections']])
@@ -47,8 +47,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
     if (hasSectionAccess) return true
 
-    if (item.fallbackRoles) {
-      return hasAnyRole(user, item.fallbackRoles)
+    if (item.requiredRoles) {
+      return hasAnyRole(user, item.requiredRoles)
     }
 
     return true

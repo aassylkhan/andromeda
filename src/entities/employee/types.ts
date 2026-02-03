@@ -1,19 +1,9 @@
 export type EmployeeRole = 'EXPERT' | 'MENTOR' | 'TEACHER' | 'ACCOUNTANT' | 'HEAD' | 'DIRECTOR' | 'ADMIN'
 export type EmployeeStatus = 'ACTIVE' | 'INACTIVE'
 export type DocumentType = 'ID_CARD' | 'PASSPORT'
+export type CreateResultType = 'CREATED' | 'PHONE_TAKEN' | 'EMAIL_TAKEN' | 'USER_EXISTS_NOT_EMPLOYEE' | 'EMPLOYEE_ALREADY_EXISTS'
 
-export type EmployeeCreateResultType = 
-  | 'CREATED' 
-  | 'PHONE_TAKEN' 
-  | 'EMAIL_TAKEN' 
-  | 'USER_EXISTS_NOT_EMPLOYEE' 
-  | 'EMPLOYEE_ALREADY_EXISTS'
-
-export type ConflictType = 
-  | 'PHONE_TAKEN' 
-  | 'EMAIL_TAKEN' 
-  | 'USER_EXISTS' 
-  | 'EMPLOYEE_EXISTS'
+export type ConflictType = 'USER_EXISTS' | 'EMPLOYEE_EXISTS'
 
 export type Employee = {
   userId: number
@@ -21,50 +11,71 @@ export type Employee = {
   lastName: string
   phoneNumber: string | null
   email: string | null
-  pnOrIin: string // ID card or passport number with prefix (iin_... or pn_...)
-  documentType?: DocumentType
+  iin: string
   role: EmployeeRole
   status: EmployeeStatus
   preferredLanguage?: string | null
   createdAt?: string
 }
 
-export type PageResponse<T> = {
-  items: T[]
-  total: number
-}
-
-// Spec: EmployeeCreateRequest
-export interface CreateEmployeeRequest {
+export type EmployeeListItemDto = {
+  userId: number
   lastName: string
   firstName: string
-  documentType: DocumentType // ID_CARD | PASSPORT
-  pnOrIin: string // without prefix; backend will add iin_... or pn_...
-  phoneNumber: string // only digits, no "+"
-  email: string
-  role: EmployeeRole // mentor|teacher|expert|accountant (any case)
+  phoneNumber: string | null
+  pnOrIin: string | null
+  email: string | null
+  role: EmployeeRole
+  status: EmployeeStatus
 }
 
-// Spec: EmployeeCreateResultDto
+export type PageResponse<T> = {
+  content: T[]
+  totalElements: number
+  totalPages: number
+}
+
+export interface EmployeeCreateRequest {
+  lastName: string
+  firstName: string
+  documentType: DocumentType
+  pnOrIin: string
+  phoneNumber: string
+  email: string
+  role: 'mentor' | 'teacher' | 'expert' | 'accountant'
+}
+
 export interface EmployeeCreateResultDto {
-  type: EmployeeCreateResultType
-  conflictUser?: ConflictUserDto
+  type: CreateResultType
+  conflictUser?: {
+    id: number
+    lastName: string
+    firstName: string
+    phoneNumber: string | null
+    pnOrIin: string
+    email: string | null
+  }
   message?: string
 }
 
-export interface ConflictUserDto {
-  id: number
+export interface CreateEmployeeRequest {
   lastName: string
   firstName: string
   phoneNumber: string
-  pnOrIin: string
-  email?: string
+  email: string
+  iin: string
+  notCitizen: boolean
+  role: 'expert' | 'mentor' | 'teacher' | 'accountant'
 }
 
 export interface UpdateEmployeeRequest {
-  pnOrIin?: string | null
+  iin?: string | null
   email?: string
-  role?: EmployeeRole
+  role?: 'expert' | 'mentor' | 'teacher' | 'accountant' | 'head' | 'director' | 'admin'
+}
+
+export interface UpdatePhoneRequest {
+  phoneNumber: string
 }
 
 export interface ExistingUserInfo {
@@ -72,7 +83,7 @@ export interface ExistingUserInfo {
   firstName: string
   lastName: string
   phoneNumber: string
-  pnOrIin: string
+  iin: string
 }
 
 export interface ConflictResponse {
@@ -87,29 +98,24 @@ export interface ApiErrorResponse {
   path: string
   status: number
   timestamp: string
-  type?: EmployeeCreateResultType
   userId?: number
-  conflictUser?: ConflictUserDto
+  existingUser?: ExistingUserInfo
   conflictType?: ConflictType
 }
 
-// Specialized error for employee conflicts (400/409)
+// Specialized error for employee conflicts (400)
 export class EmployeesConflictError extends Error {
   status: number
-  type?: EmployeeCreateResultType
-  conflictUser?: ConflictUserDto
+  userId?: number
+  existingUser?: ExistingUserInfo
   conflictType?: ConflictType
 
-  constructor(
-    message: string,
-    status: number,
-    details?: Partial<EmployeesConflictError>
-  ) {
+  constructor(message: string, status: number, details?: Partial<EmployeesConflictError>) {
     super(message)
     this.name = 'EmployeesConflictError'
     this.status = status
-    this.type = details?.type
-    this.conflictUser = details?.conflictUser
+    this.userId = details?.userId
+    this.existingUser = details?.existingUser
     this.conflictType = details?.conflictType
   }
 }

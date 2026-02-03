@@ -1,12 +1,17 @@
 import { http } from '../../shared/api'
 import type {
   Employee,
+  EmployeeListItemDto,
+  EmployeeCreateRequest,
+  EmployeeCreateResultDto,
   CreateEmployeeRequest,
   UpdateEmployeeRequest,
-  EmployeeCreateResultDto,
+  UpdatePhoneRequest,
+  PageResponse,
   ApiErrorResponse,
 } from './types'
 import { EmployeesConflictError } from './types'
+import { normalizePhoneDigits } from '../../shared/utils/phoneUtils'
 
 interface AxiosErrorResponse {
   response?: {
@@ -15,29 +20,24 @@ interface AxiosErrorResponse {
   }
 }
 
-/**
- * Handles API errors consistently across employee endpoints.
- * Converts 400/409 responses to EmployeesConflictError with conflict details.
- */
+// Helper to handle API errors consistently
 function handleApiError(error: unknown, defaultMessage: string): never {
   const axiosError = error as AxiosErrorResponse
-  
-  // Handle 400/409 conflicts with detailed error response
-  if (axiosError?.response?.status === 400 || axiosError?.response?.status === 409) {
+  // Handle 400 conflicts
+  if (axiosError?.response?.status === 400) {
     const errorData = axiosError.response.data as ApiErrorResponse
     throw new EmployeesConflictError(
       errorData.message || defaultMessage,
-      axiosError.response.status,
+      400,
       {
-        type: errorData.type,
-        conflictUser: errorData.conflictUser,
+        userId: errorData.userId,
+        existingUser: errorData.existingUser,
         conflictType: errorData.conflictType,
       }
     )
   }
-  
   // Re-throw other errors with default message
-  const message = (axiosError?.response?.data as { message?: string })?.message || defaultMessage
+  const message = (axiosError?.response?.data as { message?: string })?.message || 'Произошла непредвиденная ошибка'
   throw new Error(message)
 }
 
@@ -45,279 +45,238 @@ interface GetEmployeesParams {
   page?: number
   size?: number
   q?: string
-  roles?: string[]
-  statuses?: string[]
+  role?: string
+  status?: string
 }
 
-type EmployeesResponse = {
-  items?: Employee[]
-  content?: Employee[]
-  total?: number
-  totalElements?: number
-} | Employee[]
+type EmployeesResponse = PageResponse<EmployeeListItemDto> | PageResponse<Employee> | Employee[]
 
-const normalizeEmployee = (employee: Employee): Employee => employee
+const normalizeEmployee = (employee: Employee): Employee => {
+  return employee
+}
 
-const normalizeEmployeesResponse = (data: EmployeesResponse): { items: Employee[]; total: number } => {
+const toApiRole = (role?: string) => (role ? role.toUpperCase() : role)
+
+const sanitizeUpdatePayload = (payload: UpdateEmployeeRequest): Partial<UpdateEmployeeRequest> => {
+  const result: Partial<UpdateEmployeeRequest> = {}
+
+  if (payload.iin && payload.iin.trim() !== '') {
+    result.iin = payload.iin
+  }
+
+  if (payload.email && payload.email.trim() !== '') {
+    result.email = payload.email
+  }
+
+  if (payload.role) {
+    result.role = payload.role
+  }
+
+  return result
+}
+
+const normalizeEmployeesResponse = (data: EmployeesResponse): { items: Employee[] | EmployeeListItemDto[]; total: number } => {
   if (Array.isArray(data)) {
     return { items: data.map(normalizeEmployee), total: data.length }
   }
 
-  const items = (data.items ?? data.content ?? []).map(normalizeEmployee)
-  const total = data.total ?? data.totalElements ?? items.length
+  const items = (data.content ?? []).map(normalizeEmployee)
+  const total = data.totalElements ?? items.length
 
   return { items, total }
 }
 
-// ============================================================================
-// SPEC: GET /api/v1/employees (листинг + поиск + фильтр)
-// ============================================================================
-
-/**
- * Get employees list with optional search and filters.
- * 
- * @param params.page - 0-based page number (default 0)
- * @param params.size - page size (default 20)
- * @param params.q - search query (searches userId, phone, pn_or_iin, email, names)
- * @param params.roles - array of roles to filter (mentor, teacher, expert, accountant, head, director)
- * @param params.statuses - array of statuses to filter (ACTIVE, INACTIVE)
- */
 export async function getEmployees(
   params?: GetEmployeesParams
-): Promise<{ items: Employee[]; total: number }> {
+): Promise<{ items: Employee[] | EmployeeListItemDto[]; total: number }> {
   const { data } = await http.get<EmployeesResponse>('/api/v1/employees', {
-    params,
+    params: {
+      page: params?.page ?? 0,
+      size: params?.size ?? 10,
+      ...(params?.q && { q: params.q }),
+      ...(params?.role && { role: params.role }),
+      ...(params?.status && { status: params.status }),
+    },
   })
 
   return normalizeEmployeesResponse(data)
 }
 
-// ============================================================================
-// SPEC: POST /api/v1/employees (попытка добавить сотрудника)
-// ============================================================================
+export async function searchEmployees(params: {
+  q: string
+  role?: string
+  status?: string
+  page?: number
+  size?: number
+}): Promise<{ items: Employee[] | EmployeeListItemDto[]; total: number }> {
+  const { data } = await http.get<EmployeesResponse>('/api/v1/employees', {
+    params: {
+      page: params?.page ?? 0,
+      size: params?.size ?? 10,
+      q: params.q,
+      ...(params?.role && { role: params.role }),
+      ...(params?.status && { status: params.status }),
+    },
+  })
+
+  return normalizeEmployeesResponse(data)
+}
 
 /**
- * Create employee. Returns EmployeeCreateResultDto with conflict details if applicable.
- * 
- * Possible result types:
- * - CREATED: employee created successfully
- * - PHONE_TAKEN: phone is taken by another user (conflictUser provided)
- * - EMAIL_TAKEN: email is taken (conflictUser provided)
- * - USER_EXISTS_NOT_EMPLOYEE: user exists but is not an employee (conflictUser provided)
- * - EMPLOYEE_ALREADY_EXISTS: employee already exists (conflictUser provided)
+ * Create new employee
+ * POST /api/v1/employees
+ * Payload should have phoneNumber as digits only (no +)
  */
-export async function createEmployee(
-  payload: CreateEmployeeRequest
-): Promise<EmployeeCreateResultDto> {
+export async function createEmployee(payload: EmployeeCreateRequest): Promise<EmployeeCreateResultDto> {
   try {
     const { data } = await http.post<EmployeeCreateResultDto>('/api/v1/employees', {
-      lastName: payload.lastName,
-      firstName: payload.firstName,
-      documentType: payload.documentType,
-      pnOrIin: payload.pnOrIin,
-      phoneNumber: payload.phoneNumber, // only digits, no "+"
-      email: payload.email,
+      ...payload,
+      phoneNumber: normalizePhoneDigits(payload.phoneNumber),
       role: payload.role.toUpperCase(),
     })
     return data
   } catch (error: unknown) {
-    handleApiError(error, 'Ошибка при создании сотрудника')
+    handleApiError(error, 'Конфликт при добавлении сотрудника')
   }
 }
 
-// ============================================================================
-// SPEC: POST /api/v1/employees/actions/take-phone-and-create
-// ============================================================================
-
 /**
- * Create employee by taking phone from another user (sourceUserId).
- * Called when POST /api/v1/employees returns PHONE_TAKEN.
+ * Take phone and create employee
+ * POST /api/v1/employees/actions/take-phone-and-create?sourceUserId=...
  */
 export async function takePhoneAndCreate(
   sourceUserId: number,
-  payload: CreateEmployeeRequest
-): Promise<EmployeeCreateResultDto> {
+  payload: EmployeeCreateRequest
+): Promise<Employee> {
   try {
-    const { data } = await http.post<EmployeeCreateResultDto>(
+    const { data } = await http.post<Employee>(
       '/api/v1/employees/actions/take-phone-and-create',
       {
-        lastName: payload.lastName,
-        firstName: payload.firstName,
-        documentType: payload.documentType,
-        pnOrIin: payload.pnOrIin,
-        phoneNumber: payload.phoneNumber,
-        email: payload.email,
+        ...payload,
+        phoneNumber: normalizePhoneDigits(payload.phoneNumber),
         role: payload.role.toUpperCase(),
       },
       {
         params: { sourceUserId },
       }
     )
-    return data
+    return normalizeEmployee(data)
   } catch (error: unknown) {
-    handleApiError(error, 'Ошибка при создании сотрудника с отобранием номера')
+    handleApiError(error, 'Ошибка при создании с заимствованным номером')
   }
 }
 
-// ============================================================================
-// SPEC: POST /api/v1/employees/actions/add-as-employee
-// ============================================================================
-
 /**
- * Add existing user as employee.
- * Called when POST /api/v1/employees returns USER_EXISTS_NOT_EMPLOYEE.
+ * Add user as employee
+ * POST /api/v1/employees/actions/add-as-employee?userId=...&role=...
  */
-export async function addAsEmployee(
-  userId: number,
-  role: string
-): Promise<EmployeeCreateResultDto> {
+export async function addAsEmployee(userId: number, role: string): Promise<Employee> {
   try {
-    const { data } = await http.post<EmployeeCreateResultDto>(
-      '/api/v1/employees/actions/add-as-employee',
-      null,
-      {
-        params: {
-          userId,
-          role: role.toUpperCase(),
-        },
-      }
-    )
-    return data
+    const { data } = await http.post<Employee>('/api/v1/employees/actions/add-as-employee', null, {
+      params: {
+        userId,
+        role: role.toUpperCase(),
+      },
+    })
+    return normalizeEmployee(data)
   } catch (error: unknown) {
-    handleApiError(error, 'Ошибка при добавлении пользователя как сотрудника')
+    handleApiError(error, 'Ошибка при добавлении пользователя сотрудником')
   }
 }
 
-// ============================================================================
-// SPEC: PATCH /api/v1/employees/{userId}/role
-// ============================================================================
+/**
+ * Confirm existing user as employee (for conflicts)
+ * POST /api/v1/employees/actions/add-as-employee?userId=...&role=...
+ * Alias for addAsEmployee
+ */
+export const confirmExistingEmployee = addAsEmployee
 
 /**
- * Update employee role.
- * Note: cannot set HEAD role via this endpoint (returns error).
+ * Update employee role
+ * PATCH /api/v1/employees/{userId}/role?role=...
  */
-export async function editRole(userId: number, role: string): Promise<Employee> {
+export async function updateEmployeeRole(userId: number, role: string): Promise<Employee> {
   try {
-    const { data } = await http.patch<Employee>(
-      `/api/v1/employees/${userId}/role`,
-      null,
-      {
-        params: { role: role.toUpperCase() },
-      }
-    )
+    const { data } = await http.patch<Employee>(`/api/v1/employees/${userId}/role`, null, {
+      params: { role: role.toUpperCase() },
+    })
     return normalizeEmployee(data)
   } catch (error: unknown) {
     handleApiError(error, 'Ошибка при обновлении роли')
   }
 }
 
-// ============================================================================
-// SPEC: PATCH /api/v1/employees/{userId}/phone
-// ============================================================================
-
 /**
- * Update employee phone number.
- * Returns 200 on success, or 409 if phone is taken (conflictUser provided).
+ * Update employee phone
+ * PATCH /api/v1/employees/{userId}/phone?phone=...
  */
-export async function editPhone(userId: number, phone: string): Promise<Employee> {
+export async function updateEmployeePhone(userId: number, phone: string): Promise<Employee> {
   try {
-    const { data } = await http.patch<Employee>(
-      `/api/v1/employees/${userId}/phone`,
-      null,
-      {
-        params: { phone }, // only digits, no "+"
-      }
-    )
+    const { data } = await http.patch<Employee>(`/api/v1/employees/${userId}/phone`, null, {
+      params: { phone: normalizePhoneDigits(phone) },
+    })
     return normalizeEmployee(data)
   } catch (error: unknown) {
     handleApiError(error, 'Ошибка при обновлении номера телефона')
   }
 }
 
-// ============================================================================
-// SPEC: POST /api/v1/employees/{userId}/phone/take
-// ============================================================================
-
 /**
- * Take phone from another user and assign to current employee.
- * Called when PATCH /api/v1/employees/{userId}/phone returns 409 PHONE_TAKEN.
+ * Take phone from another user
+ * POST /api/v1/employees/{userId}/phone/take?sourceUserId=...&phone=...
  */
-export async function takePhone(
-  userId: number,
-  sourceUserId: number,
-  phone: string
-): Promise<void> {
+export async function takePhoneFrom(userId: number, sourceUserId: number, phone: string): Promise<Employee> {
   try {
-    await http.post(
-      `/api/v1/employees/${userId}/phone/take`,
-      null,
-      {
-        params: {
-          sourceUserId,
-          phone, // only digits, no "+"
-        },
-      }
-    )
+    const { data } = await http.post<Employee>(`/api/v1/employees/${userId}/phone/take`, null, {
+      params: {
+        sourceUserId,
+        phone: normalizePhoneDigits(phone),
+      },
+    })
+    return normalizeEmployee(data)
   } catch (error: unknown) {
-    handleApiError(error, 'Ошибка при отобрании номера телефона')
+    handleApiError(error, 'Ошибка при заимствовании номера телефона')
   }
 }
 
-// ============================================================================
-// SPEC: PATCH /api/v1/employees/{userId}/email
-// ============================================================================
-
 /**
- * Update employee email.
- * Returns 200 on success, or 409 if email is taken.
+ * Update employee email
+ * PATCH /api/v1/employees/{userId}/email?email=...
  */
-export async function editEmail(userId: number, email: string): Promise<Employee> {
+export async function updateEmployeeEmail(userId: number, email: string): Promise<Employee> {
   try {
-    const { data } = await http.patch<Employee>(
-      `/api/v1/employees/${userId}/email`,
-      null,
-      {
-        params: { email },
-      }
-    )
+    const { data } = await http.patch<Employee>(`/api/v1/employees/${userId}/email`, null, {
+      params: { email },
+    })
     return normalizeEmployee(data)
   } catch (error: unknown) {
     handleApiError(error, 'Ошибка при обновлении email')
   }
 }
 
-// ============================================================================
-// SPEC: PATCH /api/v1/employees/{userId}/status
-// ============================================================================
-
 /**
- * Update employee status (activate/deactivate).
+ * Update employee status
+ * PATCH /api/v1/employees/{userId}/status?active=true|false
  */
-export async function setStatus(userId: number, active: boolean): Promise<void> {
+export async function updateEmployeeStatus(userId: number, active: boolean): Promise<Employee> {
   try {
-    await http.patch(
-      `/api/v1/employees/${userId}/status`,
-      null,
-      {
-        params: { active },
-      }
-    )
+    const { data } = await http.patch<Employee>(`/api/v1/employees/${userId}/status`, null, {
+      params: { active },
+    })
+    return normalizeEmployee(data)
   } catch (error: unknown) {
     handleApiError(error, 'Ошибка при обновлении статуса')
   }
 }
 
-// ============================================================================
-// SPEC: PATCH /api/v1/employees/{userId}/assign-head
-// ============================================================================
-
 /**
- * Assign employee as HEAD (only DIRECTOR role can do this).
- * Returns 403 if insufficient permissions.
+ * Assign user as head
+ * PATCH /api/v1/employees/{userId}/assign-head
  */
-export async function assignHead(userId: number): Promise<void> {
+export async function assignAsHead(userId: number): Promise<Employee> {
   try {
-    await http.patch(`/api/v1/employees/${userId}/assign-head`, null)
+    const { data } = await http.patch<Employee>(`/api/v1/employees/${userId}/assign-head`)
+    return normalizeEmployee(data)
   } catch (error: unknown) {
     handleApiError(error, 'Ошибка при назначении руководителем')
   }
