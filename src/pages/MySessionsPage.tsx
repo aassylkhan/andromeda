@@ -79,13 +79,13 @@ export function MySessionsPage() {
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <Typography variant="h1" sx={{ fontWeight: 800, color: '#141A21', fontSize: '2rem' }}>
+    <Box sx={{ display: 'flex', mb: 2, flexDirection: 'column', gap: 2 }}>
+      <Typography variant="h2" sx={{ fontWeight: 600, color: '#3b3e42', fontSize: '2rem' }}>
         Мои сессии
       </Typography>
 
       {/* Toolbar */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+      <Box sx={{ display: 'flex',mb: 2, alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
         <Stack direction="row" spacing={2} sx={{ ml: 'auto' }}>
           <Button variant="outlined" startIcon={<RefreshIcon />} onClick={() => void fetchSessions()} disabled={loading} sx={{ height: 56, borderRadius: 2, px: 3 }}>
             Обновить

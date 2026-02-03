@@ -85,19 +85,26 @@ export function AllSessionsPage() {
   }
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <Typography variant="h1" sx={{ fontWeight: 800, color: '#141A21', fontSize: '2rem' }}>
+      <Typography variant="h2" sx={{ fontWeight: 600, color: '#3b3e42', fontSize: '2rem' }}>
         Все сессии пользователя
       </Typography>
 
       {/* Toolbar */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+      <Box sx={{ display: 'flex',mb: 2, width: '100%', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
         <TextField
           placeholder="userId"
           variant="outlined"
           value={userId}
           onChange={(e) => setUserId(e.target.value)}
           InputProps={{ startAdornment: <InputAdornment position="start">#</InputAdornment> }}
-          sx={{ flex: '1 1 520px', maxWidth: 750 }}
+           sx={{
+            flex: 1,
+            '& .MuiOutlinedInput-root': {
+              height: 56,
+              borderRadius: 2,
+              bgcolor: '#fff', // инпут сам по себе белый, но без общего Paper
+            },
+          }}
         />
 
         <Stack direction="row" spacing={2} sx={{ ml: 'auto' }}>

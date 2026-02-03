@@ -30,26 +30,27 @@ import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded'
 import logo from '../../assets/Yadro by Andromeda-4.png'
 import { useAuthStore } from '../../entities/auth'
 
-const DRAWER_WIDTH = 300
+const DRAWER_WIDTH = 350
 
-// Bigger Newton-like menu
+// ✅ Внешний зазор от плашек до края Drawer (8px = 1, 12px = 1.5, 16px = 2)
+const LIST_GUTTER_X = 0
+
 const NAV = {
-  bg: '#FFFFFF',
-  border: 'rgba(145, 158, 171, 0.12)',
+  bg: '#ffffff',
+  border: 'rgba(66, 0, 172, 0.12)',
 
-  itemHeight: 54,
-  iconSize: 26,
-  iconBox: 40,
+  itemHeight: 55,
+  iconSize: 25,
+  iconBox: 25,
   fontSize: 16,
 
-  itemColor: 'rgba(99, 115, 129, 1)', // #637381
-  itemActiveColor: 'rgba(33, 43, 54, 1)', // #212B36
+  itemColor: 'rgb(117, 114, 136)',
+  itemActiveColor: 'rgba(97, 91, 104, 0.92)',
 
-  itemHoverBg: 'rgba(145, 158, 171, 0.12)',
-  itemActiveBg: 'rgba(145, 158, 171, 0.20)',
+  itemHoverBg: 'rgba(114, 74, 187, 0.12)',
+  itemActiveBg: 'rgba(108, 77, 182, 0.26)',
 }
 
-// Мягкий фон под логотип (мутный, не кислотный)
 const BRAND_BG = `
   radial-gradient(1200px 740px at 18% 12%, rgba(37, 41, 101, 0.10), transparent 60%),
   radial-gradient(980px 720px at 82% 18%, rgba(75, 42, 100, 0.09), transparent 62%),
@@ -126,11 +127,12 @@ export function AppLayout() {
             if (isMobile) setMobileOpen(false)
           }}
           sx={{
-            px: 1.5,
-          
-            py: 1.25,
-            gap: 2,
-            borderRadius: 1.2,
+            width: '100%', // ✅ важно: плашка занимает ширину списка (а список уже с padding)
+            mb: -1,
+            px: 2.5,
+            py: 2,
+            gap: 3,
+            borderRadius: 1,
 
             minHeight: `${NAV.itemHeight}px`,
             fontSize: NAV.fontSize,
@@ -195,7 +197,19 @@ export function AppLayout() {
 
       {/* Menu */}
       <Box component="nav" display="flex" flex="1 1 auto" flexDirection="column">
-        <Box component="ul" sx={{ m: 0, p: 0, listStyle: 'none' }} gap={0.75} display="flex" flexDirection="column">
+        <Box
+          component="ul"
+          sx={{
+            m: 0,
+            p: 0,
+            px: LIST_GUTTER_X, // ✅ вот он: внешний зазор от плашки до края Drawer
+            listStyle: 'none',
+            boxSizing: 'border-box',
+          }}
+          gap={0.75}
+          display="flex"
+          flexDirection="column"
+        >
           {visibleMenuItems.map((item) => renderNavItem(item))}
         </Box>
       </Box>
@@ -203,7 +217,15 @@ export function AppLayout() {
       {/* Bottom (profile + actions) */}
       <Box sx={{ mt: 2 }}>
         {user && (
-          <Box sx={{ px: 1.5, pb: 1.5, display: 'flex', alignItems: 'center', gap: 1.25 }}>
+          <Box
+            sx={{
+              px: LIST_GUTTER_X, // ✅ чтобы профиль по краям совпадал со списком
+              pb: 1.5,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1.25,
+            }}
+          >
             <Avatar sx={{ width: 40, height: 40 }}>
               {(user.firstName?.[0] ?? '').toUpperCase()}
               {(user.lastName?.[0] ?? '').toUpperCase()}
@@ -221,7 +243,21 @@ export function AppLayout() {
           </Box>
         )}
 
-        <Box component="ul" sx={{ m: 0, p: 0, listStyle: 'none' }} gap={0.75} display="flex" flexDirection="column">
+        <Box
+          component="ul"
+          sx={{
+            m: 0,
+            p: 0,
+            mb: 1,
+            px: LIST_GUTTER_X, // ✅ тот же внешний зазор для нижних кнопок
+            listStyle: 'none',
+            boxSizing: 'border-box',
+          }}
+          gap={0.75}
+          display="flex"
+          flexDirection="column"
+          
+        >
           {renderNavItem(
             {
               label: 'Мои данные',
@@ -309,7 +345,6 @@ export function AppLayout() {
     >
       <CssBaseline />
 
-      {/* Всё поверх фона */}
       <Box sx={{ display: 'flex', flex: 1, width: '100%', position: 'relative', zIndex: 1 }}>
         {isMobile && (
           <AppBar
@@ -344,7 +379,7 @@ export function AppLayout() {
                   px: 2.5,
                   overflow: 'unset',
                   width: DRAWER_WIDTH,
-                  bgcolor: NAV.bg, // Drawer всегда белый
+                  bgcolor: NAV.bg,
                 },
               }}
             >
@@ -361,7 +396,7 @@ export function AppLayout() {
                   px: 2.5,
                   overflow: 'unset',
                   width: DRAWER_WIDTH,
-                  bgcolor: NAV.bg, // Drawer всегда белый
+                  bgcolor: NAV.bg,
                   borderRight: `1px solid ${NAV.border}`,
                 },
               }}
@@ -394,7 +429,9 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2 }}>
       <Typography sx={{ color: 'text.secondary', fontWeight: 600 }}>{label}</Typography>
-      <Typography sx={{ textAlign: 'right', fontWeight: 700 }}>{value}</Typography>
+      <Typography sx={{ textAlign: 'right', fontWeight: 700 }}>
+        {value}
+      </Typography>
     </Box>
   )
 }

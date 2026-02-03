@@ -221,7 +221,7 @@ const EmployeesPage: React.FC = () => {
 
   return (
     <Box sx={{ p: 0.5, display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <Typography variant="h1" sx={{ fontWeight: 800, color: '#141A21', fontSize: '2rem' }}>
+      <Typography variant="h2" sx={{ fontWeight: 700, color: '#32353a', fontSize: '2rem' }}>
         Сотрудники
       </Typography>
 
