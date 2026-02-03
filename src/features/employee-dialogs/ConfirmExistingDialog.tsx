@@ -11,8 +11,9 @@ import {
   CircularProgress,
 } from '@mui/material'
 import {
-  confirmExistingUser,
+  confirmExistingEmployee,
   takePhoneAndCreate,
+  toEmployeeCreateRequest,
   isEmployeesConflictError,
   type CreateEmployeeRequest,
   type ExistingUserInfo,
@@ -39,7 +40,7 @@ export function ConfirmExistingDialog({
   const handleConfirm = async () => {
     setLoading(true)
     try {
-      await confirmExistingUser(existingUser.userId, formData)
+      await confirmExistingEmployee(existingUser.userId, formData.role)
       enqueueSnackbar('Успешно сохранено', { variant: 'success' })
       onSuccess()
     } catch (error: unknown) {
@@ -55,7 +56,7 @@ export function ConfirmExistingDialog({
   const handleTakePhone = async () => {
     setLoading(true)
     try {
-      await takePhoneAndCreate(existingUser.userId, formData)
+      await takePhoneAndCreate(existingUser.userId, toEmployeeCreateRequest(formData))
       enqueueSnackbar('Успешно сохранено', { variant: 'success' })
       onSuccess()
     } catch (error: unknown) {

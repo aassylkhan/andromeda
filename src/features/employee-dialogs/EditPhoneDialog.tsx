@@ -61,7 +61,7 @@ export function EditPhoneDialog({ open, employee, onClose, onSuccess }: EditPhon
     if (!employee) return
     setIsSubmitting(true)
     try {
-      await updateEmployeePhone(employee.userId, data)
+      await updateEmployeePhone(employee.userId, data.phoneNumber)
       enqueueSnackbar('Успешно сохранено', { variant: 'success' })
       reset()
       onClose()

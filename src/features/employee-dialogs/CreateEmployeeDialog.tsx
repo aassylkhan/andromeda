@@ -16,11 +16,12 @@ import {
 } from '@mui/material'
 import { 
   createEmployee, 
+  toEmployeeCreateRequest,
   type CreateEmployeeRequest,
   type ExistingUserInfo,
   isEmployeesConflictError,
   takePhoneAndCreate,
-  confirmExistingUser,
+  confirmExistingEmployee,
 } from '../../entities/employee'
 import { createEmployeeSchema } from './schemas'
 import { ExistingUserDialog } from './ExistingUserDialog'
@@ -77,7 +78,7 @@ export function CreateEmployeeDialog({ open, onClose, onSuccess }: CreateEmploye
         ...formData,
         iin: formData.notCitizen && !formData.iin ? '000000000000' : formData.iin
       }
-      await createEmployee(payload as CreateEmployeeRequest)
+      await createEmployee(toEmployeeCreateRequest(payload))
       enqueueSnackbar('Сотрудник добавлен', { variant: 'success' })
       reset()
       onClose()
@@ -135,7 +136,7 @@ export function CreateEmployeeDialog({ open, onClose, onSuccess }: CreateEmploye
           ? '000000000000' 
           : conflictState.formData.iin
       }
-      await confirmExistingUser(conflictState.existingUser.userId, payload)
+      await confirmExistingEmployee(conflictState.existingUser.userId, payload.role)
       enqueueSnackbar('Сотрудник добавлен', { variant: 'success' })
       reset()
       setConflictState(null)
@@ -165,7 +166,7 @@ export function CreateEmployeeDialog({ open, onClose, onSuccess }: CreateEmploye
           ? '000000000000' 
           : conflictState.formData.iin
       }
-      await takePhoneAndCreate(conflictState.existingUser.userId, payload)
+      await takePhoneAndCreate(conflictState.existingUser.userId, toEmployeeCreateRequest(payload))
       enqueueSnackbar('Сотрудник добавлен', { variant: 'success' })
       reset()
       setConflictState(null)

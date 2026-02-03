@@ -4,12 +4,11 @@ import type {
   EmployeeListItemDto,
   EmployeeCreateRequest,
   EmployeeCreateResultDto,
-  CreateEmployeeRequest,
   UpdateEmployeeRequest,
-  UpdatePhoneRequest,
   PageResponse,
   ApiErrorResponse,
 } from './types'
+import type { CreateEmployeeRequest } from './types'
 import { EmployeesConflictError } from './types'
 import { normalizePhoneDigits } from '../../shared/utils/phoneUtils'
 
@@ -55,32 +54,27 @@ const normalizeEmployee = (employee: Employee): Employee => {
   return employee
 }
 
-const toApiRole = (role?: string) => (role ? role.toUpperCase() : role)
-
-const sanitizeUpdatePayload = (payload: UpdateEmployeeRequest): Partial<UpdateEmployeeRequest> => {
-  const result: Partial<UpdateEmployeeRequest> = {}
-
-  if (payload.iin && payload.iin.trim() !== '') {
-    result.iin = payload.iin
+const listItemToEmployee = (item: EmployeeListItemDto): Employee => {
+  return {
+    userId: item.userId,
+    firstName: item.firstName,
+    lastName: item.lastName,
+    phoneNumber: item.phoneNumber,
+    email: item.email,
+    iin: item.pnOrIin ?? '',
+    role: item.role,
+    status: item.status,
   }
-
-  if (payload.email && payload.email.trim() !== '') {
-    result.email = payload.email
-  }
-
-  if (payload.role) {
-    result.role = payload.role
-  }
-
-  return result
 }
 
-const normalizeEmployeesResponse = (data: EmployeesResponse): { items: Employee[] | EmployeeListItemDto[]; total: number } => {
+const normalizeEmployeesResponse = (data: EmployeesResponse): { items: Employee[]; total: number } => {
   if (Array.isArray(data)) {
-    return { items: data.map(normalizeEmployee), total: data.length }
+    const items = data.map((e) => ('iin' in e ? normalizeEmployee(e as Employee) : listItemToEmployee(e as EmployeeListItemDto)))
+    return { items, total: items.length }
   }
 
-  const items = (data.content ?? []).map(normalizeEmployee)
+  const raw = data.content ?? []
+  const items = raw.map((e) => ('iin' in e ? normalizeEmployee(e as Employee) : listItemToEmployee(e as EmployeeListItemDto)))
   const total = data.totalElements ?? items.length
 
   return { items, total }
@@ -88,7 +82,7 @@ const normalizeEmployeesResponse = (data: EmployeesResponse): { items: Employee[
 
 export async function getEmployees(
   params?: GetEmployeesParams
-): Promise<{ items: Employee[] | EmployeeListItemDto[]; total: number }> {
+): Promise<{ items: Employee[]; total: number }> {
   const { data } = await http.get<EmployeesResponse>('/api/v1/employees', {
     params: {
       page: params?.page ?? 0,
@@ -108,7 +102,7 @@ export async function searchEmployees(params: {
   statuses?: string
   page?: number
   size?: number
-}): Promise<{ items: Employee[] | EmployeeListItemDto[]; total: number }> {
+}): Promise<{ items: Employee[]; total: number }> {
   const { data } = await http.get<EmployeesResponse>('/api/v1/employees', {
     params: {
       page: params?.page ?? 0,
@@ -120,6 +114,19 @@ export async function searchEmployees(params: {
   })
 
   return normalizeEmployeesResponse(data)
+}
+
+/** Map form CreateEmployeeRequest to API EmployeeCreateRequest */
+export function toEmployeeCreateRequest(form: CreateEmployeeRequest): EmployeeCreateRequest {
+  return {
+    lastName: form.lastName,
+    firstName: form.firstName,
+    documentType: form.notCitizen ? 'PASSPORT' : 'ID_CARD',
+    pnOrIin: form.notCitizen && !form.iin ? '000000000000' : form.iin,
+    phoneNumber: form.phoneNumber,
+    email: form.email,
+    role: form.role,
+  }
 }
 
 /**
@@ -252,6 +259,19 @@ export async function updateEmployeeEmail(userId: number, email: string): Promis
   } catch (error: unknown) {
     handleApiError(error, 'Ошибка при обновлении email')
   }
+}
+
+/**
+ * Update employee (role, email). Calls updateEmployeeRole and updateEmployeeEmail as needed.
+ */
+export async function updateEmployee(userId: number, payload: UpdateEmployeeRequest): Promise<Employee> {
+  if (payload.role != null && payload.email != null) {
+    await updateEmployeeRole(userId, payload.role)
+    return updateEmployeeEmail(userId, payload.email)
+  }
+  if (payload.role != null) return updateEmployeeRole(userId, payload.role)
+  if (payload.email != null) return updateEmployeeEmail(userId, payload.email)
+  throw new Error('Nothing to update')
 }
 
 /**

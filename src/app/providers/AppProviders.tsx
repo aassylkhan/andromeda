@@ -6,7 +6,6 @@ import type { ReactNode } from 'react'
 const BRAND_INDIGO = '#262965'
 const BRAND_PURPLE = '#5C2E66'
 const BRAND_MAGENTA = '#8E3968'
-const BRAND_ROSE = '#AE496D'
 const BRAND_CORAL = '#CB626A'
 
 export const BRAND_GRADIENT =

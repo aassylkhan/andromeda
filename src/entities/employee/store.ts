@@ -74,8 +74,8 @@ export const useEmployeeStore = create<EmployeeStore>((set, get) => ({
       if (q) {
         const result = await searchEmployees({
           q,
-          role: roleFilter || undefined,
-          status: statusFilter || undefined,
+          roles: roleFilter || undefined,
+          statuses: statusFilter || undefined,
           page,
           size,
         })
@@ -83,8 +83,8 @@ export const useEmployeeStore = create<EmployeeStore>((set, get) => ({
         total = result.total
       } else {
         const result = await getEmployees({
-          role: roleFilter || undefined,
-          status: statusFilter || undefined,
+          roles: roleFilter || undefined,
+          statuses: statusFilter || undefined,
           page,
           size,
         })
