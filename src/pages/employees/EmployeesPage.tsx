@@ -220,59 +220,119 @@ const EmployeesPage: React.FC = () => {
   }
 
   return (
-    <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
+    <Box sx={{ p: 0.5, display: 'flex', flexDirection: 'column', gap: 2 }}>
       <Typography variant="h1" sx={{ fontWeight: 800, color: '#141A21', fontSize: '2rem' }}>
         Сотрудники
       </Typography>
 
-      <Box>
-        <Paper sx={{ bgcolor: '#fff', p: 2, mb: 2, borderRadius: 2, boxShadow: '0 0 2px 0 rgba(145,158,171,0.20), 0 12px 24px -4px rgba(145,158,171,0.12)', display: 'flex', alignItems: 'center', gap: 2 }}>
-          <TextField
-            placeholder="Поиск по ФИО, номеру, email..."
-            size="small"
+      {/* Панель поиска/фильтра/добавления — БЕЗ общей подложки (как Newton) */}
+      <Box
+        sx={{
+          mb: 2,
+          display: 'flex',
+          alignItems: 'center',
+          gap:2,
+          width: '100%',
+        }}
+      >
+        <TextField
+          placeholder="Поиск по ФИО, номеру, email..."
+          size="small"
+          variant="outlined"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          sx={{
+            flex: 1,
+            '& .MuiOutlinedInput-root': {
+              height: 56,
+              borderRadius: 2,
+              bgcolor: '#fff', // инпут сам по себе белый, но без общего Paper
+            },
+          }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            ),
+          }}
+        />
+
+        <Stack direction="row" spacing={2} sx={{ ml: 'auto' }}>
+          <Button
             variant="outlined"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            sx={{ flex: 1 }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              ),
+            startIcon={<FilterListIcon />}
+            onClick={() => setOpenFilterModal(true)}
+            sx={{
+              height: 56,
+              borderRadius: 2,
+              px: 3,
+              bgcolor: '#fff', // кнопка на белом фоне без общей карточки
             }}
-          />
+          >
+            Фильтр
+          </Button>
 
-          <Stack direction="row" spacing={2} sx={{ ml: 'auto' }}>
-            <Button variant="outlined" startIcon={<FilterListIcon />} onClick={() => setOpenFilterModal(true)} sx={{ height: 56, borderRadius: 2, px: 3 }}>
-              Фильтр
-            </Button>
-
-            <Button variant="contained" startIcon={<AddIcon />} onClick={() => setOpenAddModal(true)} sx={{ height: 56, borderRadius: 2, px: 3 }}>
-              Добавить
-            </Button>
-          </Stack>
-        </Paper>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => setOpenAddModal(true)}
+            sx={{ height: 56, borderRadius: 2, px: 3 }}
+          >
+            Добавить
+          </Button>
+        </Stack>
       </Box>
 
-      <Paper sx={{ bgcolor: '#fff', p: 0, borderRadius: 2, boxShadow: '0 0 2px 0 rgba(145,158,171,0.20), 0 12px 24px -4px rgba(145,158,171,0.12)', overflow: 'hidden', flex: 1 }}>
+      <Paper
+        sx={{
+          
+          bgcolor: '#fff',
+          p: 0,
+          borderRadius: 2,
+          boxShadow: '0 0 2px 0 rgba(145,158,171,0.20), 0 12px 24px -4px rgba(145,158,171,0.12)',
+          overflow: 'hidden',
+          flex: 1,
+        }}
+      >
         {loading && employees.length === 0 && (
           <Box sx={{ position: 'relative', minHeight: 300 }}>
-            <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF', zIndex: 1 }}>
+            <Box
+              sx={{
+                position: 'absolute',
+                inset: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: '#FFFFFF',
+                zIndex: 1,
+              }}
+            >
               <CircularProgress size={48} thickness={4} />
             </Box>
           </Box>
         )}
 
         {employees.length === 0 && !loading ? (
-          <Box sx={{ p: 6, textAlign: 'center', color: 'text.secondary' }}>
-            Сотрудники не найдены
-          </Box>
+          <Box sx={{ p: 6, textAlign: 'center', color: 'text.secondary' }}>Сотрудники не найдены</Box>
         ) : (
           <TableContainer>
             <Table sx={{ bgcolor: '#FFFFFF' }}>
               <TableHead>
-                <TableRow sx={{ bgcolor: '#F3F6FB', '& .MuiTableCell-root': { bgcolor: '#F3F6FB', fontWeight: 600, fontSize: '0.875rem', color: '#637381', borderBottom: '1px solid rgba(145,158,171,0.20)', py: 1.5, px: 3 } }}>
+                <TableRow
+                  sx={{
+                    bgcolor: '#F3F6FB',
+                    '& .MuiTableCell-root': {
+                      bgcolor: '#F3F6FB',
+                      fontWeight: 700,
+                      fontSize: '0.875rem',
+                      color: '#637381',
+                      borderBottom: '1px solid rgba(145,158,171,0.20)',
+                      py: 1,
+                      px: 3,
+                    },
+                  }}
+                >
                   <TableCell>ID</TableCell>
                   <TableCell>ФИО</TableCell>
                   <TableCell>WhatsApp</TableCell>
@@ -285,28 +345,80 @@ const EmployeesPage: React.FC = () => {
               </TableHead>
 
               <TableBody>
-                {employees.map((employee) => (
-                  <TableRow key={employee.userId} hover sx={{ '& td': { borderBottom: '1px solid rgba(145,158,171,0.12)', px: 3 } }}>
-                    <TableCell>{employee.userId}</TableCell>
-                    <TableCell>{`${employee.lastName} ${employee.firstName}`}</TableCell>
-                    <TableCell>{employee.phoneNumber ? formatPhoneForUi(employee.phoneNumber) : '-'}</TableCell>
-                    <TableCell>{employee.pnOrIin || '-'}</TableCell>
-                    <TableCell>{employee.email || '-'}</TableCell>
-                    <TableCell>{employee.role}</TableCell>
-                    <TableCell>
-                      {employee.status === 'ACTIVE' ? (
-                        <Chip label="Активный" sx={{ height: 24, borderRadius: 999, fontSize: 12, fontWeight: 700, bgcolor: '#22C55E', color: '#fff' }} />
-                      ) : (
-                        <Chip label="Неактивный" sx={{ height: 24, borderRadius: 999, fontSize: 12, fontWeight: 700, bgcolor: 'rgba(145,158,171,0.18)', color: '#637381' }} />
-                      )}
-                    </TableCell>
-                    <TableCell align="center">
-                      <IconButton size="small" onClick={(e) => handleContextMenu(e, employee)} disabled={!isHeadOrDirector}>
-                        <MoreVertIcon fontSize="small" />
-                      </IconButton>
+                {employees.length === 0 && !loading ? (
+                  <TableRow>
+                    <TableCell colSpan={9} align="center" sx={{ py: 8, position: 'relative' }}>
+                      <Box
+                        sx={{
+                          position: 'absolute',
+                          inset: 0,
+                          background:
+                            `radial-gradient(900px 500px at 80% 10%, rgba(46, 97, 255, 0.14), transparent 60%),
+                             radial-gradient(700px 450px at 20% 20%, rgba(156, 81, 255, 0.12), transparent 60%),
+                             radial-gradient(900px 600px at 30% 90%, rgba(255, 92, 122, 0.10), transparent 55%),
+                             #F6F8FB`,
+                          pointerEvents: 'none',
+                        }}
+                      />
+                      <Box sx={{ position: 'relative', zIndex: 1 }}>
+                        <Typography variant="body1" color="text.secondary">
+                          Нет сотрудников для отображения
+                        </Typography>
+                      </Box>
                     </TableCell>
                   </TableRow>
-                ))}
+                ) : (
+                  employees.map((employee) => (
+                    <TableRow
+                      key={employee.userId}
+                      hover
+                      sx={{ '& td': { borderBottom: '1px solid rgba(145,158,171,0.12)', px: 3 } }}
+                    >
+                      <TableCell>{employee.userId}</TableCell>
+                      <TableCell>{`${employee.lastName} ${employee.firstName}`}</TableCell>
+                      <TableCell>{employee.phoneNumber ? formatPhoneForUi(employee.phoneNumber) : '-'}</TableCell>
+                      <TableCell>{employee.pnOrIin || '-'}</TableCell>
+                      <TableCell>{employee.email || '-'}</TableCell>
+                      <TableCell>{employee.role}</TableCell>
+                      <TableCell>
+                        {employee.status === 'ACTIVE' ? (
+                          <Chip
+                            label="Активный"
+                            sx={{
+                              height: 24,
+                              borderRadius: 999,
+                              fontSize: 12,
+                              fontWeight: 700,
+                              bgcolor: '#22C55E',
+                              color: '#fff',
+                            }}
+                          />
+                        ) : (
+                          <Chip
+                            label="Неактивный"
+                            sx={{
+                              height: 24,
+                              borderRadius: 999,
+                              fontSize: 12,
+                              fontWeight: 700,
+                              bgcolor: 'rgba(145,158,171,0.18)',
+                              color: '#637381',
+                            }}
+                          />
+                        )}
+                      </TableCell>
+                      <TableCell align="center">
+                        <IconButton
+                          size="small"
+                          onClick={(e) => handleContextMenu(e, employee)}
+                          disabled={!isHeadOrDirector}
+                        >
+                          <MoreVertIcon fontSize="small" />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </TableContainer>

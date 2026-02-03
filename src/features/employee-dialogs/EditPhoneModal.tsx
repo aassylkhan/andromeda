@@ -8,6 +8,7 @@ import {
   TextField,
   CircularProgress,
   Box,
+  InputAdornment,
 } from '@mui/material'
 import { useSnackbar } from 'notistack'
 import { normalizePhoneDigits } from '../../shared/utils/phoneUtils'
@@ -85,12 +86,19 @@ export const EditPhoneModal: React.FC<EditPhoneModalProps> = ({
           <Box sx={{ mt: 2 }}>
             <TextField
               label="WhatsApp номер"
-              placeholder="+7 700 123 45 67"
+              placeholder="700 123 45 67"
               fullWidth
-              value={phone}
+              value={phone.replace(/^\+/, '')}
               onChange={(e) => setPhone(e.target.value)}
               inputProps={{ inputMode: 'tel' }}
               disabled={loading}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    +
+                  </InputAdornment>
+                ),
+              }}
             />
           </Box>
         </DialogContent>

@@ -15,6 +15,7 @@ import {
   Radio,
   Box,
   CircularProgress,
+  InputAdornment,
 } from '@mui/material'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
@@ -251,15 +252,22 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ open, onClos
                 <TextField
                   {...field}
                   label="WhatsApp номер"
-                  placeholder="+7 700 123 45 67"
+                  placeholder="700 123 45 67"
                   error={!!errors.phoneNumber}
                   helperText={errors.phoneNumber?.message}
                   fullWidth
                   size="small"
-                  value={phoneValue}
+                  value={phoneValue.replace(/^\+/, '')}
                   onChange={(e) => onChange(e.target.value)}
                   inputProps={{
                     inputMode: 'tel',
+                  }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        +
+                      </InputAdornment>
+                    ),
                   }}
                 />
               )}

@@ -2,16 +2,26 @@ import { CssBaseline, ThemeProvider, createTheme } from '@mui/material'
 import { SnackbarProvider } from 'notistack'
 import type { ReactNode } from 'react'
 
+// Brand palette (from logo)
+const BRAND_INDIGO = '#262965'
+const BRAND_PURPLE = '#5C2E66'
+const BRAND_MAGENTA = '#8E3968'
+const BRAND_ROSE = '#AE496D'
+const BRAND_CORAL = '#CB626A'
+
+export const BRAND_GRADIENT =
+  'linear-gradient(135deg, #262965 0%, #5C2E66 45%, #AE496D 75%, #CB626A 100%)'
+
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#1877F2',
-      light: '#73BAFB',
-      dark: '#0C44AE',
+      main: BRAND_PURPLE,
+      light: BRAND_MAGENTA,
+      dark: BRAND_INDIGO,
       contrastText: '#fff',
     },
     secondary: {
-      main: '#8E33FF',
+      main: BRAND_CORAL,
       contrastText: '#fff',
     },
     background: {
@@ -165,17 +175,17 @@ const theme = createTheme({
         contained: {
           boxShadow: 'none',
           '&:hover': {
-            boxShadow: '0 4px 12px rgba(24, 119, 242, 0.2)',
+            boxShadow: '0 6px 18px rgba(92,46,102,0.12)',
             transform: 'translateY(-1px)',
           },
           transition: 'all 0.2s ease',
         },
         containedPrimary: {
-          backgroundColor: '#1877F2',
-          boxShadow: '0 4px 12px rgba(24, 119, 242, 0.2)',
+          background: BRAND_GRADIENT,
+          color: '#FFFFFF',
+          boxShadow: '0 8px 24px rgba(92,46,102,0.14)',
           '&:hover': {
-            backgroundColor: '#0C44AE',
-            boxShadow: '0 8px 20px rgba(24, 119, 242, 0.3)',
+            boxShadow: '0 12px 36px rgba(92,46,102,0.18)',
             transform: 'translateY(-1px)',
           },
           transition: 'all 0.2s ease',
@@ -254,11 +264,11 @@ const theme = createTheme({
               borderColor: '#919EAB',
             },
             '&.Mui-focused': {
-              boxShadow: '0 0 0 4px rgba(24, 119, 242, 0.15)',
-              '& fieldset': {
-                borderWidth: '1px',
-                borderColor: '#1877F2',
-              },
+              boxShadow: `0 0 0 4px ${BRAND_PURPLE}22`,
+                '& fieldset': {
+                  borderWidth: '1px',
+                  borderColor: BRAND_PURPLE,
+                },
             },
           },
         },
@@ -273,11 +283,11 @@ const theme = createTheme({
           transition: 'all 0.2s ease',
           position: 'relative',
           height: '44px',
-          '&.Mui-selected': {
-            backgroundColor: '#D0ECFE',
-            color: '#0C44AE',
+            '&.Mui-selected': {
+            backgroundColor: `${BRAND_PURPLE}14`,
+            color: BRAND_PURPLE,
             fontWeight: 600,
-            boxShadow: '0 2px 8px rgba(24, 119, 242, 0.15)',
+            boxShadow: `0 2px 8px ${BRAND_PURPLE}1f`,
             '&::before': {
               content: '""',
               position: 'absolute',
@@ -287,14 +297,14 @@ const theme = createTheme({
               width: '4px',
               height: '60%',
               borderRadius: '0 4px 4px 0',
-              backgroundColor: '#1877F2',
+              backgroundColor: BRAND_PURPLE,
             },
             '&:hover': {
-              backgroundColor: '#73BAFB',
-              boxShadow: '0 4px 12px rgba(24, 119, 242, 0.2)',
+              backgroundColor: `${BRAND_MAGENTA}10`,
+              boxShadow: `0 4px 12px ${BRAND_PURPLE}1f`,
             },
             '& .MuiListItemIcon-root': {
-              color: '#1877F2',
+              color: BRAND_PURPLE,
             },
           },
           '&:hover': {

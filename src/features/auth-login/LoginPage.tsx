@@ -49,9 +49,10 @@ export function LoginPage() {
           position: 'absolute',
           inset: 0,
           background:
-            `radial-gradient(900px 500px at 10% 10%, rgba(37,99,235,.18), transparent 60%),
-             radial-gradient(900px 500px at 90% 15%, rgba(34,211,238,.14), transparent 60%),
-             radial-gradient(900px 500px at 60% 90%, rgba(167,139,250,.14), transparent 60%)`,
+            `radial-gradient(900px 500px at 80% 10%, rgba(46, 97, 255, 0.14), transparent 60%),
+             radial-gradient(700px 450px at 20% 20%, rgba(156, 81, 255, 0.12), transparent 60%),
+             radial-gradient(900px 600px at 30% 90%, rgba(255, 92, 122, 0.10), transparent 55%),
+             #F6F8FB`,
           pointerEvents: 'none',
         },
       }}

@@ -45,8 +45,8 @@ interface GetEmployeesParams {
   page?: number
   size?: number
   q?: string
-  role?: string
-  status?: string
+  roles?: string
+  statuses?: string
 }
 
 type EmployeesResponse = PageResponse<EmployeeListItemDto> | PageResponse<Employee> | Employee[]
@@ -94,8 +94,8 @@ export async function getEmployees(
       page: params?.page ?? 0,
       size: params?.size ?? 10,
       ...(params?.q && { q: params.q }),
-      ...(params?.role && { role: params.role }),
-      ...(params?.status && { status: params.status }),
+      ...(params?.roles && { roles: params.roles }),
+      ...(params?.statuses && { statuses: params.statuses }),
     },
   })
 
@@ -104,8 +104,8 @@ export async function getEmployees(
 
 export async function searchEmployees(params: {
   q: string
-  role?: string
-  status?: string
+  roles?: string
+  statuses?: string
   page?: number
   size?: number
 }): Promise<{ items: Employee[] | EmployeeListItemDto[]; total: number }> {
@@ -114,8 +114,8 @@ export async function searchEmployees(params: {
       page: params?.page ?? 0,
       size: params?.size ?? 10,
       q: params.q,
-      ...(params?.role && { role: params.role }),
-      ...(params?.status && { status: params.status }),
+      ...(params?.roles && { roles: params.roles }),
+      ...(params?.statuses && { statuses: params.statuses }),
     },
   })
 

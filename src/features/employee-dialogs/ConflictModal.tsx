@@ -85,6 +85,31 @@ export const ConflictModal: React.FC<ConflictModalProps> = ({
     )
   }
 
+  const getCancelButtonLabel = (): string => {
+    switch (conflictType) {
+      case 'EMAIL_TAKEN':
+      case 'EMPLOYEE_ALREADY_EXISTS':
+      case 'EDIT_EMAIL_CONFLICT':
+        return 'Закрыть'
+      default:
+        return 'Отменить'
+    }
+  }
+
+  const getConfirmButtonLabel = (): string => {
+    if (confirmLabel) return confirmLabel
+    switch (conflictType) {
+      case 'PHONE_TAKEN':
+        return 'Отобрать номер'
+      case 'USER_EXISTS_NOT_EMPLOYEE':
+        return 'Добавить как сотрудника'
+      case 'EDIT_PHONE_CONFLICT':
+        return 'Отобрать номер'
+      default:
+        return 'Подтвердить'
+    }
+  }
+
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -129,7 +154,7 @@ export const ConflictModal: React.FC<ConflictModalProps> = ({
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} disabled={loading}>
-          Отменить
+          {getCancelButtonLabel()}
         </Button>
         {showActionButton() && (
           <Button
@@ -141,7 +166,7 @@ export const ConflictModal: React.FC<ConflictModalProps> = ({
             {loading && (
               <CircularProgress size={20} sx={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)' }} />
             )}
-            <span style={{ visibility: loading ? 'hidden' : 'visible' }}>{confirmLabel}</span>
+            <span style={{ visibility: loading ? 'hidden' : 'visible' }}>{getConfirmButtonLabel()}</span>
           </Button>
         )}
       </DialogActions>

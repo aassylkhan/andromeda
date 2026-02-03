@@ -1,82 +1,51 @@
-# AI Agent Instructions — my-react-app
+﻿# AI Agent Instructions  my-react-app
 
-## 🏗️ Architecture at a Glance
+Purpose: quick, repo-specific guidance to make AI coding assistants productive immediately.
 
-**Feature-Sliced Design** (5 layers):
-- `app/` — Initialization (providers, layout, routing, auth guards)
-- `shared/` — Infrastructure (HTTP client, tokens, hooks, utils)
-- `entities/` — Domain models with Zustand stores (auth, employee, session)
-- `features/` — Business logic + UI (dialogs, forms, pages composition)
-- `pages/` — Route handlers combining features + entities
+**Quick Start (dev)**
+- `npm run dev`  Vite dev server (port 3000 in dev); `/api` is proxied to the real backend.
+- `npm run build`  runs type-check + vite build.
+- `npm run lint`  runs `eslint` (workspace has per-file ESLint tasks you can reuse for fixes).
 
-## 🔑 Critical Patterns
+**Architecture (high level)**
+- Feature-sliced layout: `app/`, `shared/`, `entities/`, `features/`, `pages/`.
+- `entities/` contains all Zustand stores and domain APIs (auth, employee, session).
+- `features/` is UI + business logic (dialogs, forms) and is composed inside `pages/`.
 
-### HTTP + Auth (see [src/shared/api/http.ts](src/shared/api/http.ts))
-- **Single refresh queue**: When 401 occurs, all failed requests wait in `failedQueue`. Only ONE refresh token request fires; others reuse its result.
-- **AUTH_EXCLUDE endpoints** (no Authorization header, no refresh trigger): `/api/v1/auth/send-code`, `/api/v1/auth/login`, `/api/v1/auth/refresh`
-- **No refresh token** → `clearTokens()` + redirect to `/login` (prevents 401 loops)
-- **Proxy in dev**: `npm run dev` runs Vite on port 3000, proxies `/api` → `https://api.andromedaedu.kz`
+**Critical integration points (must-read files)**
+- HTTP & auth: [src/shared/api/http.ts](src/shared/api/http.ts) and [src/shared/api/tokens.ts](src/shared/api/tokens.ts)
+- Route guard: [src/app/routes/ProtectedRoute.tsx](src/app/routes/ProtectedRoute.tsx)
+- Auth store: [src/entities/auth/store.ts](src/entities/auth/store.ts)
+- Employee flows & conflicts: [src/features/employee-dialogs/CreateEmployeeDialog.tsx](src/features/employee-dialogs/CreateEmployeeDialog.tsx) and [src/entities/employee/ERROR_HANDLING.md](src/entities/employee/ERROR_HANDLING.md)
 
-### ProtectedRoute (see [src/app/routes/ProtectedRoute.tsx](src/app/routes/ProtectedRoute.tsx))
-- **No token** → redirect `/login`, skip `loadMe()` (critical for preventing 401 loops)
-- **Has token** → call `loadMe()` exactly once → check `requiredRoles`/`requiredSections` → show 403 if denied
-- **Loading state**: CircularProgress while fetching user data
+**Important patterns & conventions (explicit, not generic)**
+- Single refresh queue: when a 401 occurs the code pushes failed requests to a `failedQueue` and fires exactly one refresh call  do not bypass this mechanism. (See `http.ts`.)
+- AUTH_EXCLUDE endpoints: `/api/v1/auth/send-code`, `/api/v1/auth/login`, `/api/v1/auth/refresh`  these requests must not send Authorization header and must not trigger refresh logic.
+- No refresh token => call `clearTokens()` and redirect to `/login` to avoid 401 loops.
+- `ProtectedRoute` will only call `loadMe()` when an access token exists; ensure you don't force `loadMe()` earlier.
+- Temp phone persistence: `sendCode()` stores `tempPhoneNumber` in localStorage; `login()` clears it only on success. Preserve that behaviour when modifying auth flows.
+- Employee conflict handling: `createEmployee()` may return structured conflicts (`USER_EXISTS`, `EMPLOYEE_EXISTS`)  UI shows different dialogs rather than failing silently.
+- Stores must live in `entities/` (do not add new stores in `features/` or `pages/`).
 
-### Auth Store (see [src/entities/auth/store.ts](src/entities/auth/store.ts))
-- `sendCode(phone)` → save `tempPhoneNumber` to localStorage (survives page reload)
-- `login(phone, code)` → clear `tempPhoneNumber` ONLY after success
-- `loadMe()` → only called with accessToken present
-- Pattern: all async actions → set loading → try/catch → set error/result
+**Forms, UI & UX conventions**
+- Forms use React Hook Form + Yup (`yupResolver(schema)` from `@hookform/resolvers/yup`).
+- Snackbars: use `notistack` via `enqueueSnackbar(...)` for success/error messages.
+- Phone formatting: use `formatPhoneNumber()` in [src/pages/employees/utils.ts](src/pages/employees/utils.ts).
 
-### Employee Creation Conflicts (see [src/features/employee-dialogs/CreateEmployeeDialog.tsx](src/features/employee-dialogs/CreateEmployeeDialog.tsx))
-When `createEmployee()` returns 400 conflict, catch `EmployeesConflictError`:
-- `conflictType` determines dialog: `USER_EXISTS` → ExistingUserDialog | `EMPLOYEE_EXISTS` → EmployeeExistsDialog | else → RefusalDialog
-- ExistingUserDialog actions: `confirmExistingEmployee(userId, payload)` or `takePhoneAndCreate()`
-- **Error behavior**: on 500 or API errors, dialogs stay open (no auto-close) → user retries
+**API & UI interaction specifics**
+- Pagination is 0-based: backend expects `{ page: 0, size: 10 }`.
+- Employee search is debounced using `useDebounce(400)` (see [src/pages/employees/EmployeesPage.tsx](src/pages/employees/EmployeesPage.tsx)).
 
-### Forms & UI
-- **React Hook Form + Yup**: use `yupResolver(schema)` from `@hookform/resolvers/yup`
-- **Snackbar**: `enqueueSnackbar(msg, { variant: 'success'|'error'|'warning'|'info' })` via `notistack`
-- **Phone formatting**: `formatPhoneNumber()` in [src/pages/employees/utils.ts](src/pages/employees/utils.ts) (libphonenumber-js)
-- **Icons**: `@mui/icons-material`
+**Dev / debugging tips**
+- To debug auth refresh loops, run the dev server and watch network calls to `/api/v1/auth/refresh`.
+- Local dev: override API host with `.env.local` or `VITE_API_BASE_URL`.
+- ESLint helper tasks exist for specific files (see workspace tasks for per-file `npx eslint <file> --fix`).
 
-### Pagination & Search (see [src/pages/employees/EmployeesPage.tsx](src/pages/employees/EmployeesPage.tsx))
-- **Debounce search**: `useDebounce(400)` prevents frequent API calls
-- **0-based paging**: `{ page: 0, size: 10 }` (backend expects page starting at 0)
-- **Filters**: `role` (teacher/student), `status` (active/inactive)
+**When editing auth/http flows**
+1. Update [src/shared/api/http.ts](src/shared/api/http.ts) and [src/shared/api/tokens.ts](src/shared/api/tokens.ts).
+2. Run dev server and reproduce 401 to verify single-refresh and `failedQueue` behaviour.
+3. Update `entities/*` API calls only after http/tokens changes are validated.
 
-### Zustand Stores (entities only)
-Stores live ONLY in `entities/` (auth, employee, session), exported as hooks: `export const useAuthStore = create<AuthStore>(...)`
+If anything is unclear or you need more examples, ask for the specific file/path to expand with code snippets.
 
-## 📋 Dev Commands
-
-```bash
-npm run dev      # Vite dev server on port 3000, /api proxied
-npm run build    # tsc type check + vite build
-npm run lint     # eslint with --fix
-npm run preview  # preview production build locally
-```
-
-## 🐳 Docker & Env
-
-- `VITE_API_BASE_URL` env var controls API base (default: `https://api.andromedaedu.kz`)
-- Local dev: use `.env.local` to override
-- Docker Compose: Vite proxied through nginx to container port 8082
-
-## ⚠️ When Making Changes
-
-1. **Changing HTTP/auth flows**: update [src/shared/api/http.ts](src/shared/api/http.ts), [src/shared/api/tokens.ts](src/shared/api/tokens.ts), then adjust entity API calls
-2. **Adding stores**: place ONLY in `entities/`, NEVER in `features/` or `pages/`
-3. **New features**: use `features/` for UI + business logic, compose in `pages/`
-
-## 🐛 Debugging
-
-- Auth 401/refresh flow: run dev server, inspect `/api/v1/auth/refresh` calls
-- Temp phone key in localStorage: `tempPhoneNumber` (auth flow recovery)
-- Conflicts: [src/entities/employee/ERROR_HANDLING.md](src/entities/employee/ERROR_HANDLING.md) and [src/features/employee-dialogs/ZD3_CHANGES.md](src/features/employee-dialogs/ZD3_CHANGES.md) for details
-
-## 📚 Reference Files
-
-- Full architecture: [INDEX.md](INDEX.md)
-- Employee error handling: [src/entities/employee/ERROR_HANDLING.md](src/entities/employee/ERROR_HANDLING.md)
-- Conflict scenarios: [src/features/employee-dialogs/ZD3_CHANGES.md](src/features/employee-dialogs/ZD3_CHANGES.md)
+Reference: full architecture in [INDEX.md](INDEX.md)

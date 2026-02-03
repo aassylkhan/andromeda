@@ -2,53 +2,60 @@ import React, { useMemo, useState } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import {
   AppBar,
+  Avatar,
   Box,
+  Button,
   CssBaseline,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
-  Divider,
   Drawer,
   IconButton,
-  List,
   ListItem,
   ListItemButton,
-  ListItemIcon,
-  ListItemText,
   Toolbar,
   Typography,
-  Button,
   useMediaQuery,
   useTheme,
 } from '@mui/material'
-import {
-  People as PeopleIcon,
-  Logout as LogoutIcon,
-  EventNote as EventNoteIcon,
-  ListAlt as ListAltIcon,
-  Settings as SettingsIcon,
-  Menu as MenuIcon,
-} from '@mui/icons-material'
+import MenuIcon from '@mui/icons-material/Menu'
+import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined'
+import EventNoteOutlinedIcon from '@mui/icons-material/EventNoteOutlined'
+import ListAltOutlinedIcon from '@mui/icons-material/ListAltOutlined'
+import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined'
+import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded'
+
 import logo from '../../assets/Yadro by Andromeda-4.png'
 import { useAuthStore } from '../../entities/auth'
 
 const DRAWER_WIDTH = 300
 
-// Newton-ish tokens
-const TOKENS = {
-  pageBg: '#F6F7FB',
-  drawerBg: '#FFFFFF',
-  divider: 'rgba(15, 23, 42, 0.08)',
-  text: 'rgba(15, 23, 42, 0.78)',
-  muted: 'rgba(15, 23, 42, 0.52)',
-  active: '#2563EB',
-  activeBg: 'rgba(37, 99, 235, 0.10)',
-  hoverBg: 'rgba(37, 99, 235, 0.08)',
-  softBtnBg: 'rgba(15, 23, 42, 0.06)',
-  softBtnBgHover: 'rgba(15, 23, 42, 0.09)',
+// Bigger Newton-like menu
+const NAV = {
+  bg: '#FFFFFF',
+  border: 'rgba(145, 158, 171, 0.12)',
+
+  itemHeight: 54,
+  iconSize: 26,
+  iconBox: 28,
+  fontSize: 16,
+
+  itemColor: 'rgba(99, 115, 129, 1)', // #637381
+  itemActiveColor: 'rgba(33, 43, 54, 1)', // #212B36
+
+  itemHoverBg: 'rgba(145, 158, 171, 0.12)',
+  itemActiveBg: 'rgba(145, 158, 171, 0.20)',
 }
+
+// Мягкий фон под логотип (мутный, не кислотный)
+const BRAND_BG = `
+  radial-gradient(1200px 740px at 18% 12%, rgba(37, 41, 101, 0.10), transparent 60%),
+  radial-gradient(980px 720px at 82% 18%, rgba(75, 42, 100, 0.09), transparent 62%),
+  radial-gradient(1150px 820px at 46% 92%, rgba(201, 96, 107, 0.10), transparent 58%),
+  #F6F7FB
+`
 
 export function AppLayout() {
   const theme = useTheme()
@@ -61,7 +68,7 @@ export function AppLayout() {
   const location = useLocation()
 
   const user = useAuthStore((s) => s.user)
-  const logout = useAuthStore((s) => (s as any).logout) // если есть logout() в сторе
+  const logout = useAuthStore((s) => (s as any).logout)
 
   const handleDrawerToggle = () => setMobileOpen((v) => !v)
 
@@ -72,9 +79,24 @@ export function AppLayout() {
     sectionKey?: keyof NonNullable<typeof user>['sections']
   }> = useMemo(
     () => [
-      { label: 'Сотрудники', icon: <PeopleIcon fontSize="small" />, path: '/employees', sectionKey: 'employees' },
-      { label: 'Мои сессии', icon: <EventNoteIcon fontSize="small" />, path: '/my-sessions', sectionKey: 'mySessions' },
-      { label: 'Все сессии', icon: <ListAltIcon fontSize="small" />, path: '/sessions', sectionKey: 'admin' },
+      {
+        label: 'Сотрудники',
+        icon: <PeopleAltOutlinedIcon sx={{ width: NAV.iconSize, height: NAV.iconSize }} />,
+        path: '/employees',
+        sectionKey: 'employees',
+      },
+      {
+        label: 'Мои сессии',
+        icon: <EventNoteOutlinedIcon sx={{ width: NAV.iconSize, height: NAV.iconSize }} />,
+        path: '/my-sessions',
+        sectionKey: 'mySessions',
+      },
+      {
+        label: 'Все сессии',
+        icon: <ListAltOutlinedIcon sx={{ width: NAV.iconSize, height: NAV.iconSize }} />,
+        path: '/sessions',
+        sectionKey: 'admin',
+      },
     ],
     []
   )
@@ -86,19 +108,71 @@ export function AppLayout() {
     })
   }, [menuItems, user])
 
+  const renderNavItem = (
+    item: { label: string; icon: React.ReactNode; path: string },
+    onClick?: () => void
+  ) => {
+    const isActived = location.pathname === item.path || location.pathname.startsWith(`${item.path}/`)
+
+    return (
+      <ListItem disableGutters disablePadding key={item.label}>
+        <ListItemButton
+          disableGutters
+          disableRipple
+          disableTouchRipple
+          onClick={() => {
+            if (onClick) onClick()
+            else navigate(item.path)
+            if (isMobile) setMobileOpen(false)
+          }}
+          sx={{
+            pl: 0,
+            pr: 2,
+            py: 1.25,
+            gap: 2,
+            borderRadius: 1.2,
+
+            minHeight: `${NAV.itemHeight}px`,
+            fontSize: NAV.fontSize,
+            lineHeight: '24px',
+
+            fontWeight: isActived ? 700 : 600,
+            color: isActived ? NAV.itemActiveColor : NAV.itemColor,
+
+            '&:hover': { bgcolor: NAV.itemHoverBg },
+
+            ...(isActived && {
+              bgcolor: NAV.itemActiveBg,
+              '&:hover': { bgcolor: NAV.itemHoverBg },
+            }),
+          }}
+        >
+          <Box
+            component="span"
+            sx={{
+              width: NAV.iconBox,
+              height: NAV.iconBox,
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}
+          >
+            {item.icon}
+          </Box>
+
+          <Box component="span" sx={{ flexGrow: 1 }}>
+            {item.label}
+          </Box>
+        </ListItemButton>
+      </ListItem>
+    )
+  }
+
   const drawerContent = (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      {/* Brand */}
-      <Box
-        sx={{
-          px: 2.5,
-          pt: 2.5,
-          pb: 2,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
+      {/* Logo */}
+      <Box sx={{ mb: 2 }}>
         <Box
           component="img"
           src={logo}
@@ -108,135 +182,74 @@ export function AppLayout() {
             if (isMobile) setMobileOpen(false)
           }}
           sx={{
-            width: '100%',
-            maxWidth: 280,
-            height: 'auto',
+            height: 120,
+            width: 'auto',
+            maxWidth: '100%',
             objectFit: 'contain',
             cursor: 'pointer',
             userSelect: 'none',
+            display: 'block',
           }}
         />
       </Box>
 
-      <Divider sx={{ borderColor: TOKENS.divider }} />
-
       {/* Menu */}
-      <Box sx={{ flexGrow: 1, overflow: 'auto', px: 2.5, py: 1.5 }}>
-        <List sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
-          {visibleMenuItems.map((item) => {
-            const selected = location.pathname === item.path
-
-            return (
-              <ListItem key={item.label} disablePadding>
-                <ListItemButton
-                  onClick={() => {
-                    navigate(item.path)
-                    if (isMobile) setMobileOpen(false)
-                  }}
-                  selected={selected}
-                  sx={{
-                    minHeight: 46,
-                    borderRadius: 2,
-                    px: 2,
-                    gap: 1.75,
-                    color: TOKENS.text,
-
-                    '&:hover': { bgcolor: TOKENS.hoverBg },
-
-                    '&.Mui-selected, &.Mui-selected:hover': {
-                      bgcolor: TOKENS.activeBg,
-                      color: TOKENS.active,
-                      fontWeight: 700,
-                    },
-                  }}
-                >
-                  <ListItemIcon
-                    sx={{
-                      minWidth: 0,
-                      width: 28,
-                      height: 28,
-                      display: 'grid',
-                      placeItems: 'center',
-                      color: 'inherit',
-                    }}
-                  >
-                    {item.icon}
-                  </ListItemIcon>
-
-                  <ListItemText
-                    primary={item.label}
-                    primaryTypographyProps={{
-                      fontSize: 14,
-                      fontWeight: selected ? 700 : 600,
-                      lineHeight: '22px',
-                    }}
-                  />
-                </ListItemButton>
-              </ListItem>
-            )
-          })}
-        </List>
+      <Box component="nav" display="flex" flex="1 1 auto" flexDirection="column">
+        <Box component="ul" sx={{ m: 0, p: 0, listStyle: 'none' }} gap={0.75} display="flex" flexDirection="column">
+          {visibleMenuItems.map((item) => renderNavItem(item))}
+        </Box>
       </Box>
 
-      <Divider sx={{ borderColor: TOKENS.divider }} />
+      {/* Bottom (profile + actions) */}
+      <Box sx={{ mt: 2 }}>
+        {user && (
+          <Box sx={{ px: 1.5, pb: 1.5, display: 'flex', alignItems: 'center', gap: 1.25 }}>
+            <Avatar sx={{ width: 40, height: 40 }}>
+              {(user.firstName?.[0] ?? '').toUpperCase()}
+              {(user.lastName?.[0] ?? '').toUpperCase()}
+            </Avatar>
 
-      {/* Bottom actions */}
-      <Box
-        sx={{
-          p: 2,
-          display: 'flex',
-          gap: 1,
-          alignItems: 'center',
-        }}
-      >
-        <IconButton
-          onClick={() => setSettingsOpen(true)}
-          sx={{
-            width: 44,
-            height: 44,
-            borderRadius: 2,
-            color: TOKENS.muted,
-            bgcolor: TOKENS.softBtnBg,
-            '&:hover': { bgcolor: TOKENS.softBtnBgHover },
-          }}
-          aria-label="Мои данные"
-        >
-          <SettingsIcon fontSize="small" />
-        </IconButton>
+            <Box sx={{ minWidth: 0 }}>
+              <Typography noWrap sx={{ fontWeight: 800, fontSize: 14.5, lineHeight: '20px' }}>
+                {[user.firstName, user.lastName].filter(Boolean).join(' ') || '—'}
+              </Typography>
 
-        <Button
-          onClick={async () => {
-            try {
-              // предпочтительно: корректный logout (удаление токенов, /logout и т.п.)
-              if (typeof logout === 'function') {
-                await logout()
-              } else {
-                // fallback если logout нет
-                localStorage.removeItem('accessToken')
-                localStorage.removeItem('refreshToken')
+              <Typography noWrap sx={{ fontSize: 13.5 }} color="text.secondary">
+                {user.phoneNumber ?? user.email ?? '—'}
+              </Typography>
+            </Box>
+          </Box>
+        )}
+
+        <Box component="ul" sx={{ m: 0, p: 0, listStyle: 'none' }} gap={0.75} display="flex" flexDirection="column">
+          {renderNavItem(
+            {
+              label: 'Мои данные',
+              icon: <SettingsOutlinedIcon sx={{ width: NAV.iconSize, height: NAV.iconSize }} />,
+              path: '/__settings',
+            },
+            () => setSettingsOpen(true)
+          )}
+
+          {renderNavItem(
+            {
+              label: 'Выйти',
+              icon: <LogoutRoundedIcon sx={{ width: NAV.iconSize, height: NAV.iconSize }} />,
+              path: '/__logout',
+            },
+            async () => {
+              try {
+                if (typeof logout === 'function') await logout()
+                else {
+                  localStorage.removeItem('accessToken')
+                  localStorage.removeItem('refreshToken')
+                }
+              } finally {
+                navigate('/login')
               }
-            } finally {
-              navigate('/login')
-              if (isMobile) setMobileOpen(false)
             }
-          }}
-          variant="text"
-          startIcon={<LogoutIcon fontSize="small" />}
-          sx={{
-            flex: 1,
-            height: 44,
-            borderRadius: 2,
-            justifyContent: 'flex-start',
-            px: 2,
-            color: '#B42318',
-            bgcolor: 'rgba(180, 35, 24, 0.06)',
-            '&:hover': { bgcolor: 'rgba(180, 35, 24, 0.10)' },
-            textTransform: 'none',
-            fontWeight: 700,
-          }}
-        >
-          Выйти
-        </Button>
+          )}
+        </Box>
       </Box>
 
       {/* Settings dialog */}
@@ -267,6 +280,7 @@ export function AppLayout() {
             />
           </Box>
         </DialogContent>
+
         <DialogActions>
           <Button onClick={() => setSettingsOpen(false)} sx={{ textTransform: 'none', fontWeight: 700 }}>
             Закрыть
@@ -277,83 +291,99 @@ export function AppLayout() {
   )
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: TOKENS.pageBg }}>
+    <Box
+      sx={{
+        display: 'flex',
+        minHeight: '100vh',
+        position: 'relative',
+        bgcolor: '#F6F7FB',
+        '&::before': {
+          content: '""',
+          position: 'fixed',
+          inset: 0,
+          background: BRAND_BG,
+          pointerEvents: 'none',
+          zIndex: 0,
+        },
+      }}
+    >
       <CssBaseline />
 
-      {/* Mobile top bar (если у тебя уже есть свой AppBar — можешь убрать этот блок) */}
-      {isMobile && (
-        <AppBar
-          position="fixed"
-          elevation={0}
+      {/* Всё поверх фона */}
+      <Box sx={{ display: 'flex', flex: 1, width: '100%', position: 'relative', zIndex: 1 }}>
+        {isMobile && (
+          <AppBar
+            position="fixed"
+            elevation={0}
+            sx={{
+              bgcolor: NAV.bg,
+              borderBottom: `1px solid ${NAV.border}`,
+              color: NAV.itemActiveColor,
+            }}
+          >
+            <Toolbar sx={{ minHeight: 64, display: 'flex', gap: 1 }}>
+              <IconButton onClick={handleDrawerToggle} edge="start" sx={{ color: NAV.itemActiveColor }}>
+                <MenuIcon />
+              </IconButton>
+              <Typography sx={{ fontWeight: 800, fontSize: 16 }}>Andromeda CRM</Typography>
+            </Toolbar>
+          </AppBar>
+        )}
+
+        <Box component="nav" sx={{ width: { md: DRAWER_WIDTH }, flexShrink: { md: 0 } }}>
+          {isMobile ? (
+            <Drawer
+              variant="temporary"
+              open={mobileOpen}
+              onClose={handleDrawerToggle}
+              ModalProps={{ keepMounted: true }}
+              sx={{
+                display: { xs: 'block', md: 'none' },
+                '& .MuiDrawer-paper': {
+                  pt: 2.5,
+                  px: 2.5,
+                  overflow: 'unset',
+                  width: DRAWER_WIDTH,
+                  bgcolor: NAV.bg, // Drawer всегда белый
+                },
+              }}
+            >
+              {drawerContent}
+            </Drawer>
+          ) : (
+            <Drawer
+              variant="permanent"
+              open
+              sx={{
+                display: { xs: 'none', md: 'block' },
+                '& .MuiDrawer-paper': {
+                  pt: 2.5,
+                  px: 2.5,
+                  overflow: 'unset',
+                  width: DRAWER_WIDTH,
+                  bgcolor: NAV.bg, // Drawer всегда белый
+                  borderRight: `1px solid ${NAV.border}`,
+                },
+              }}
+            >
+              {drawerContent}
+            </Drawer>
+          )}
+        </Box>
+
+        <Box
+          component="main"
           sx={{
-            bgcolor: TOKENS.drawerBg,
-            borderBottom: `1px solid ${TOKENS.divider}`,
-            color: TOKENS.text,
+            flexGrow: 1,
+            width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
+            pt: isMobile ? 10 : 3,
+            px: 3,
+            pb: 3,
           }}
         >
-          <Toolbar sx={{ minHeight: 64, display: 'flex', gap: 1 }}>
-            <IconButton onClick={handleDrawerToggle} edge="start" sx={{ color: TOKENS.text }}>
-              <MenuIcon />
-            </IconButton>
-            <Typography sx={{ fontWeight: 800 }}>Andromeda CRM</Typography>
-          </Toolbar>
-        </AppBar>
-      )}
-
-      {/* Drawer */}
-      <Box component="nav" sx={{ width: { md: DRAWER_WIDTH }, flexShrink: { md: 0 } }}>
-        {isMobile ? (
-          <Drawer
-            variant="temporary"
-            open={mobileOpen}
-            onClose={handleDrawerToggle}
-            ModalProps={{ keepMounted: true }}
-            sx={{
-              display: { xs: 'block', md: 'none' },
-              '& .MuiDrawer-paper': {
-                boxSizing: 'border-box',
-                width: DRAWER_WIDTH,
-                bgcolor: TOKENS.drawerBg,
-                borderRight: `1px solid ${TOKENS.divider}`,
-              },
-            }}
-          >
-            {drawerContent}
-          </Drawer>
-        ) : (
-          <Drawer
-            variant="permanent"
-            open
-            sx={{
-              display: { xs: 'none', md: 'block' },
-              '& .MuiDrawer-paper': {
-                boxSizing: 'border-box',
-                width: DRAWER_WIDTH,
-                bgcolor: TOKENS.drawerBg,
-                borderRight: `1px solid ${TOKENS.divider}`,
-              },
-            }}
-          >
-            {drawerContent}
-          </Drawer>
-        )}
-      </Box>
-
-      {/* Main */}
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
-          // если есть мобильный AppBar — отступ сверху
-          pt: isMobile ? 10 : 3,
-          px: 3,
-          pb: 3,
-        }}
-      >
-        {/* Контент можно ограничить как в Newton */}
-        <Box sx={{ maxWidth: 1300, mx: 'auto' }}>
-          <Outlet />
+          <Box sx={{ maxWidth: 1300, mx: 'auto' }}>
+            <Outlet />
+          </Box>
         </Box>
       </Box>
     </Box>

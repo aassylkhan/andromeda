@@ -1,25 +1,21 @@
-/* Gradient background for app layout */
-.app-gradient-bg {
-  background: linear-gradient(135deg, #FFD97D 0%, #FFA500 25%, #FF8C42 50%, #FF6B35 75%, #FF4500 100%);
-  background-size: 400% 400%;
-  animation: gradientShift 15s ease infinite;
+/* Мягкая анимация (без цветного свечения) */
+.app-newton-bg-animated {
   min-height: 100vh;
+  background:
+    radial-gradient(900px 520px at 80% 10%, rgba(15, 23, 42, 0.06), transparent 60%),
+    radial-gradient(820px 560px at 25% 85%, rgba(15, 23, 42, 0.05), transparent 55%),
+    #F6F7FB;
+  background-size: 120% 120%;
+  animation: softBgShift 18s ease-in-out infinite;
 }
 
-@keyframes gradientShift {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
+@keyframes softBgShift {
+  0% { background-position: 0% 0%, 0% 0%, 0% 0%; }
+  50% { background-position: 12% 6%, -10% 8%, 0% 0%; }
+  100% { background-position: 0% 0%, 0% 0%, 0% 0%; }
 }
 
-/* Alternative static gradient */
-.app-gradient-bg-static {
-  background: linear-gradient(180deg, #FFD97D 0%, #FFA500 30%, #FF8C42 60%, #FF6B35 85%, #FF4500 100%);
-  min-height: 100vh;
+/* Уважение к системной настройке: уменьшение анимации */
+@media (prefers-reduced-motion: reduce) {
+  .app-newton-bg-animated { animation: none; }
 }
