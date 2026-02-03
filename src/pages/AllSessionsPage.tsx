@@ -94,7 +94,6 @@ export function AllSessionsPage() {
         <TextField
           placeholder="userId"
           variant="outlined"
-          label="userId"
           value={userId}
           onChange={(e) => setUserId(e.target.value)}
           InputProps={{ startAdornment: <InputAdornment position="start">#</InputAdornment> }}

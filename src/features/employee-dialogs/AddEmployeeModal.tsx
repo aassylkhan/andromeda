@@ -222,7 +222,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ open, onClos
                 name="documentType"
                 control={control}
                 render={({ field }) => (
-                  <RadioGroup {...field} sx={{ mt: 1 }}>
+                  <RadioGroup {...field} row sx={{ mt: 1 }}>
                     <FormControlLabel value="ID_CARD" control={<Radio />} label="Удостоверение личности" />
                     <FormControlLabel value="PASSPORT" control={<Radio />} label="Паспорт" />
                   </RadioGroup>
@@ -322,8 +322,8 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ open, onClos
         conflictType={conflict?.type || null}
         conflictUser={conflict?.data}
         onClose={() => {
-          setConflict(null)
-          setConflictLoading(false)
+          // Close whole add modal and reset form when conflict dialog is closed
+          handleClose()
         }}
         onConfirm={conflict && (conflict.type === 'PHONE_TAKEN' || conflict.type === 'USER_EXISTS_NOT_EMPLOYEE') ? handleConflictConfirm : undefined}
         confirmLabel={
