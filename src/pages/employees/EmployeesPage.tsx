@@ -377,7 +377,7 @@ const EmployeesPage: React.FC = () => {
                       <TableCell>{employee.userId}</TableCell>
                       <TableCell>{`${employee.lastName} ${employee.firstName}`}</TableCell>
                       <TableCell>{employee.phoneNumber ? formatPhoneForUi(employee.phoneNumber) : '-'}</TableCell>
-                      <TableCell>{employee.pnOrIin || '-'}</TableCell>
+                      <TableCell>{employee.iin || '-'}</TableCell>
                       <TableCell>{employee.email || '-'}</TableCell>
                       <TableCell>{employee.role}</TableCell>
                       <TableCell>
