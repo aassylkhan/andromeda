@@ -55,7 +55,7 @@ const theme = createTheme({
     },
   },
   typography: {
-    fontFamily: '"DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
+    fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
     h1: {
       fontFamily: '"Barlow", sans-serif',
       fontSize: '34px',

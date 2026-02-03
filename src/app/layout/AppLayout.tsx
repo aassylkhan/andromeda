@@ -39,7 +39,7 @@ const NAV = {
 
   itemHeight: 54,
   iconSize: 26,
-  iconBox: 28,
+  iconBox: 40,
   fontSize: 16,
 
   itemColor: 'rgba(99, 115, 129, 1)', // #637381
@@ -126,8 +126,8 @@ export function AppLayout() {
             if (isMobile) setMobileOpen(false)
           }}
           sx={{
-            pl: 0,
-            pr: 2,
+            px: 1.5,
+          
             py: 1.25,
             gap: 2,
             borderRadius: 1.2,

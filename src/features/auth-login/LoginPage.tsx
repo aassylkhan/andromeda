@@ -18,6 +18,12 @@ export function LoginPage() {
   const { sendCode, loading, error, clearError } = useAuthStore()
   const [phoneNumber, setPhoneNumber] = useState('')
 
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Оставляем только цифры
+    const digits = e.target.value.replace(/\D/g, '')
+    setPhoneNumber(digits)
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     clearError()
@@ -89,14 +95,18 @@ export function LoginPage() {
             <TextField
               fullWidth
               label="WhatsApp номер"
-              type="tel"
-              placeholder="+7 (___) ___-__-__"
+              type="text"
+              placeholder="7 (___) ___-__-__"
               value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
+              onChange={handlePhoneChange}
               disabled={loading}
               sx={{ mb: 3 }}
               autoFocus
               required
+              inputProps={{
+                inputMode: 'numeric',
+                pattern: '[0-9]*',
+              }}
             />
 
             <Button
