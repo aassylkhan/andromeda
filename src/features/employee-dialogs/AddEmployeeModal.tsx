@@ -238,7 +238,7 @@ export function AddEmployeeModal({ open, onClose, onSuccess }: AddEmployeeModalP
       <DialogContent>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
           {selectedUser && (
-            <Box sx={{ p: 2, bgcolor: '#f5f5f5', borderRadius: 1 }}>
+            <Box sx={{ p: 2, bgcolor: '#F4F6F8', borderRadius: 1 }}>
               <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
                 {selectedUser.lastName} {selectedUser.firstName} (ID: {selectedUser.id})
               </Typography>

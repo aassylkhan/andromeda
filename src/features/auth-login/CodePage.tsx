@@ -5,13 +5,14 @@ import {
   Button,
   TextField,
   Typography,
-  Paper,
-  Container,
+  Card,
+  CardContent,
+  Stack,
   Alert,
   CircularProgress,
-  Link,
+  InputAdornment,
 } from '@mui/material'
-import { LockOutlined as LockIcon } from '@mui/icons-material'
+import ShieldIcon from '@mui/icons-material/Shield'
 import { useAuthStore } from '../../entities/auth'
 
 export function CodePage() {
@@ -52,82 +53,70 @@ export function CodePage() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: 'background.default',
       }}
     >
-      <Container maxWidth="sm" sx={{ position: 'relative', zIndex: 1 }}>
-        <Paper
-          elevation={3}
-          sx={{
-            p: 4,
-            width: '100%',
-            borderRadius: 2,
-            border: '1px solid rgba(145, 158, 171, 0.16)',
-          }}
-        >
-          <Box sx={{ textAlign: 'center', mb: 4 }}>
-            <LockIcon sx={{ fontSize: 48, color: 'primary.main', mb: 2 }} />
-            <Typography variant="h4" component="h1" fontWeight={700} gutterBottom>
-              Введите код
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
+      <Box sx={{ mx: 'auto', width: 1, maxWidth: 420, px: 2 }}>
+        <Typography variant="h4" align="center" sx={{ mb: 2 }}>
+          Введите код
+        </Typography>
+
+        <Card variant="outlined" sx={{ borderRadius: 3 }}>
+          <CardContent sx={{ p: { xs: 2, md: 3 } }}>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
               Код отправлен на номер {phoneNumber}
             </Typography>
-          </Box>
 
-          {error && (
-            <Alert severity="error" sx={{ mb: 3 }}>
-              {error}
-            </Alert>
-          )}
+            {error && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {error}
+              </Alert>
+            )}
 
-          <form onSubmit={handleSubmit}>
-            <TextField
-              fullWidth
-              label="6-значный код"
-              type="text"
-              inputMode="numeric"
-              placeholder="000000"
-              value={code}
-              onChange={(e) => handleCodeChange(e.target.value)}
-              disabled={loading}
-              sx={{
-                mb: 3,
-                '& input': {
-                  fontSize: '1.5rem',
-                  letterSpacing: '0.5em',
-                  textAlign: 'center',
-                },
-              }}
-              autoFocus
-              required
-            />
+            <Box component="form" noValidate onSubmit={handleSubmit}>
+              <Stack spacing={2.5}>
+                <TextField
+                  fullWidth
+                  label="6-значный код"
+                  type="text"
+                  placeholder="000000"
+                  value={code}
+                  onChange={(e) => handleCodeChange(e.target.value)}
+                  disabled={loading}
+                  autoFocus
+                  inputProps={{ inputMode: 'numeric', autoComplete: 'one-time-code' }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <ShieldIcon sx={{ color: 'text.disabled' }} />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
 
-            <Button
-              fullWidth
-              type="submit"
-              variant="contained"
-              size="large"
-              disabled={loading || code.length !== 6}
-              sx={{ py: 1.5, fontSize: '1rem', fontWeight: 600, mb: 2 }}
-            >
-              {loading ? <CircularProgress size={24} color="inherit" /> : 'Войти'}
-            </Button>
+                <Stack direction="row" justifyContent="flex-end">
+                  <Button
+                    variant="text"
+                    size="small"
+                    onClick={() => navigate('/login')}
+                  >
+                    Изменить номер
+                  </Button>
+                </Stack>
 
-            <Box sx={{ textAlign: 'center' }}>
-              <Link
-                component="button"
-                type="button"
-                variant="body2"
-                onClick={() => navigate('/login')}
-                sx={{ cursor: 'pointer' }}
-              >
-                Изменить номер телефона
-              </Link>
+                <Button
+                  fullWidth
+                  type="submit"
+                  variant="contained"
+                  size="large"
+                  disabled={loading || code.length !== 6}
+                >
+                  {loading ? <CircularProgress size={24} color="inherit" /> : 'Войти'}
+                </Button>
+              </Stack>
             </Box>
-          </form>
-        </Paper>
-      </Container>
+          </CardContent>
+        </Card>
+      </Box>
     </Box>
   )
 }

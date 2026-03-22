@@ -186,7 +186,7 @@ export function AddUserModal({ open, onClose, onSuccess }: AddUserModalProps) {
         <DialogTitle>Пользователь с таким номером телефона уже существует</DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-            <Box sx={{ p: 2, bgcolor: '#f5f5f5', borderRadius: 1 }}>
+            <Box sx={{ p: 2, bgcolor: '#F4F6F8', borderRadius: 1 }}>
               <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 700 }}>
                 Существующий пользователь:
               </Typography>
@@ -196,7 +196,7 @@ export function AddUserModal({ open, onClose, onSuccess }: AddUserModalProps) {
               <Typography variant="body2">Телефон: {existing.phoneNumber ? formatPhoneForUi(existing.phoneNumber) : '—'}</Typography>
             </Box>
 
-            <Box sx={{ p: 2, bgcolor: '#f5f5f5', borderRadius: 1 }}>
+            <Box sx={{ p: 2, bgcolor: '#F4F6F8', borderRadius: 1 }}>
               <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 700 }}>
                 Новый пользователь:
               </Typography>

@@ -38,9 +38,9 @@ const NAV = {
   itemHeight: 44,
   iconSize: 24,
   itemColor: '#637381',
-  itemActiveColor: '#5C2E66',
-  itemActiveBg: 'rgba(92, 46, 102, 0.08)',
-  itemHoverBg: 'rgba(92, 46, 102, 0.04)',
+  itemActiveColor: '#1877F2',
+  itemActiveBg: 'rgba(24, 119, 242, 0.08)',
+  itemHoverBg: 'rgba(24, 119, 242, 0.04)',
 }
 
 export function AppLayout() {
@@ -171,7 +171,7 @@ export function AppLayout() {
 
       {user && (
         <Box sx={{ px: 1.5, pb: 0.5, display: 'flex', alignItems: 'center' }}>
-          <Avatar sx={{ mr: 1, width: 40, height: 40, bgcolor: NAV.itemActiveColor, fontSize: 14 }}>
+          <Avatar sx={{ mr: 1, width: 40, height: 40, bgcolor: '#1877F2', fontSize: 14 }}>
             {(user.lastName?.[0] ?? '').toUpperCase()}
             {(user.firstName?.[0] ?? '').toUpperCase()}
           </Avatar>
