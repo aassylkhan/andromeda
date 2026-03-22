@@ -2,7 +2,7 @@ import axios, { AxiosError } from 'axios'
 import type { AxiosInstance, InternalAxiosRequestConfig } from 'axios'
 import { getAccessToken, getRefreshToken, clearTokens, setTokens } from './tokens'
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api.andromedaedu.kz'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'https://api.andromedaedu.kz'
 
 // Auth endpoints that should be excluded from token refresh logic
 const AUTH_EXCLUDE = [
