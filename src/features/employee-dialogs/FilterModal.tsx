@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Dialog,
   DialogTitle,
@@ -11,69 +11,74 @@ import {
   FormControlLabel,
   Checkbox,
   Box,
+  CircularProgress,
 } from '@mui/material'
-import type { EmployeeRole, EmployeeStatus } from '../../entities/employee/types'
+import type { EmployeeRole, EmployeeStatus, Employee } from '../../entities/employee/types'
+import { ROLE_LABELS, STATUS_LABELS } from '../../entities/employee/types'
+import { getSupervisors } from '../../entities/employee/api'
 
 interface FilterModalProps {
   open: boolean
   onClose: () => void
-  onApply: (roles: EmployeeRole[], statuses: EmployeeStatus[]) => void
+  onApply: (roles: EmployeeRole[], statuses: EmployeeStatus[], supervisors: number[]) => void
   initialRoles?: EmployeeRole[]
   initialStatuses?: EmployeeStatus[]
+  initialSupervisors?: number[]
 }
 
-const ROLES: { value: EmployeeRole; label: string }[] = [
-  { value: 'MENTOR', label: 'Ментор' },
-  { value: 'TEACHER', label: 'Учитель' },
-  { value: 'EXPERT', label: 'Эксперт' },
-  { value: 'ACCOUNTANT', label: 'Бухгалтер' },
-  { value: 'HEAD', label: 'Руководитель' },
-  { value: 'DIRECTOR', label: 'Директор' },
-]
+const ROLE_OPTIONS: EmployeeRole[] = ['DIRECTOR', 'HEAD', 'ACCOUNTANT', 'CURATOR', 'TEACHER', 'EXPERT']
+const STATUS_OPTIONS: EmployeeStatus[] = ['ACTIVE', 'INACTIVE']
 
-const STATUSES: { value: EmployeeStatus; label: string }[] = [
-  { value: 'ACTIVE', label: 'Активный' },
-  { value: 'INACTIVE', label: 'Неактивный' },
-]
-
-export const FilterModal: React.FC<FilterModalProps> = ({
+export function FilterModal({
   open,
   onClose,
   onApply,
   initialRoles = [],
   initialStatuses = [],
-}) => {
+  initialSupervisors = [],
+}: FilterModalProps) {
   const [selectedRoles, setSelectedRoles] = useState<Set<EmployeeRole>>(new Set(initialRoles))
   const [selectedStatuses, setSelectedStatuses] = useState<Set<EmployeeStatus>>(new Set(initialStatuses))
+  const [selectedSupervisors, setSelectedSupervisors] = useState<Set<number>>(new Set(initialSupervisors))
+  const [supervisorsList, setSupervisorsList] = useState<Employee[]>([])
+  const [supervisorsLoading, setSupervisorsLoading] = useState(false)
 
-  const handleRoleChange = (role: EmployeeRole, checked: boolean) => {
-    const newRoles = new Set(selectedRoles)
-    if (checked) {
-      newRoles.add(role)
-    } else {
-      newRoles.delete(role)
-    }
-    setSelectedRoles(newRoles)
-  }
+  useEffect(() => {
+    if (open) {
+      setSelectedRoles(new Set(initialRoles))
+      setSelectedStatuses(new Set(initialStatuses))
+      setSelectedSupervisors(new Set(initialSupervisors))
 
-  const handleStatusChange = (status: EmployeeStatus, checked: boolean) => {
-    const newStatuses = new Set(selectedStatuses)
-    if (checked) {
-      newStatuses.add(status)
-    } else {
-      newStatuses.delete(status)
+      const fetchSupervisors = async () => {
+        setSupervisorsLoading(true)
+        try {
+          const data = await getSupervisors()
+          setSupervisorsList(data)
+        } catch {
+          setSupervisorsList([])
+        } finally {
+          setSupervisorsLoading(false)
+        }
+      }
+      fetchSupervisors()
     }
-    setSelectedStatuses(newStatuses)
-  }
+  }, [open])
 
   const handleApply = () => {
-    onApply(Array.from(selectedRoles), Array.from(selectedStatuses))
+    onApply(Array.from(selectedRoles), Array.from(selectedStatuses), Array.from(selectedSupervisors))
     onClose()
   }
 
   const handleReset = () => {
     setSelectedRoles(new Set())
     setSelectedStatuses(new Set())
+    setSelectedSupervisors(new Set())
+  }
+
+  const toggleSet = <T,>(set: Set<T>, value: T, checked: boolean): Set<T> => {
+    const next = new Set(set)
+    checked ? next.add(value) : next.delete(value)
+    return next
   }
 
   return (
@@ -82,47 +87,71 @@ export const FilterModal: React.FC<FilterModalProps> = ({
       <DialogContent>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 2 }}>
           <FormControl fullWidth>
-            <FormLabel>Роли</FormLabel>
+            <FormLabel>Должность</FormLabel>
             <FormGroup sx={{ mt: 1 }}>
-              {ROLES.map((role) => (
+              {ROLE_OPTIONS.map((role) => (
                 <FormControlLabel
-                  key={role.value}
+                  key={role}
                   control={
                     <Checkbox
-                      checked={selectedRoles.has(role.value)}
-                      onChange={(e) => handleRoleChange(role.value, e.target.checked)}
+                      checked={selectedRoles.has(role)}
+                      onChange={(e) => setSelectedRoles(toggleSet(selectedRoles, role, e.target.checked))}
                     />
                   }
-                  label={role.label}
+                  label={ROLE_LABELS[role]}
                 />
               ))}
             </FormGroup>
           </FormControl>
 
           <FormControl fullWidth>
-            <FormLabel>Статусы</FormLabel>
+            <FormLabel>Статус</FormLabel>
             <FormGroup sx={{ mt: 1 }}>
-              {STATUSES.map((status) => (
+              {STATUS_OPTIONS.map((status) => (
                 <FormControlLabel
-                  key={status.value}
+                  key={status}
                   control={
                     <Checkbox
-                      checked={selectedStatuses.has(status.value)}
-                      onChange={(e) => handleStatusChange(status.value, e.target.checked)}
+                      checked={selectedStatuses.has(status)}
+                      onChange={(e) => setSelectedStatuses(toggleSet(selectedStatuses, status, e.target.checked))}
                     />
                   }
-                  label={status.label}
+                  label={STATUS_LABELS[status]}
                 />
               ))}
             </FormGroup>
           </FormControl>
+
+          <FormControl fullWidth>
+            <FormLabel>Руководитель</FormLabel>
+            {supervisorsLoading ? (
+              <Box sx={{ py: 2, display: 'flex', justifyContent: 'center' }}>
+                <CircularProgress size={24} />
+              </Box>
+            ) : (
+              <FormGroup sx={{ mt: 1 }}>
+                {supervisorsList.map((s) => (
+                  <FormControlLabel
+                    key={s.userId}
+                    control={
+                      <Checkbox
+                        checked={selectedSupervisors.has(s.userId)}
+                        onChange={(e) => setSelectedSupervisors(toggleSet(selectedSupervisors, s.userId, e.target.checked))}
+                      />
+                    }
+                    label={`${s.lastName} ${s.firstName}`}
+                  />
+                ))}
+              </FormGroup>
+            )}
+          </FormControl>
         </Box>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleReset}>Очистить</Button>
+        <Button onClick={handleReset}>Сбросить</Button>
         <Button onClick={onClose}>Отменить</Button>
         <Button onClick={handleApply} variant="contained">
-          Сохранить
+          Применить
         </Button>
       </DialogActions>
     </Dialog>

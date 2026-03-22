@@ -1,13 +1,12 @@
 import { Navigate, createBrowserRouter } from 'react-router-dom'
-import EmployeesPage from '../pages/employees/EmployeesPage'
-import { MySessionsPage } from '../pages/MySessionsPage'
-import { AllSessionsPage } from '../pages/AllSessionsPage'
 import { LoginPage, CodePage } from '../features/auth-login'
 import { ProtectedRoute } from './routes/ProtectedRoute'
 import { AppLayout } from './layout/AppLayout'
+import UsersPage from '../pages/users/UsersPage'
+import EmployeesPage from '../pages/employees/EmployeesPage'
+import { SessionsPage } from '../pages/SessionsPage'
 
 export const router = createBrowserRouter([
-  // Публичные маршруты авторизации
   {
     path: '/login',
     element: <LoginPage />,
@@ -16,8 +15,6 @@ export const router = createBrowserRouter([
     path: '/login/code',
     element: <CodePage />,
   },
-  
-  // Защищенные маршруты
   {
     path: '/',
     element: (
@@ -27,29 +24,31 @@ export const router = createBrowserRouter([
     ),
     children: [
       {
-        path: '/',
-        element: <Navigate to="/employees" replace />,
+        index: true,
+        element: <Navigate to="/sessions" replace />,
       },
       {
-        path: '/employees',
+        path: 'users',
         element: (
-          <ProtectedRoute requiredRoles={['head', 'director']}>
+          <ProtectedRoute requiredRoles={['director', 'head', 'accountant', 'curator', 'expert']}>
+            <UsersPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'employees',
+        element: (
+          <ProtectedRoute requiredRoles={['director', 'head']}>
             <EmployeesPage />
           </ProtectedRoute>
         ),
       },
       {
-        path: '/my-sessions',
-        element: <MySessionsPage />,
-      },
-      {
-        path: '/sessions',
-        element: <AllSessionsPage />,
+        path: 'sessions',
+        element: <SessionsPage />,
       },
     ],
   },
-  
-  // Редирект всех неизвестных путей на /login
   {
     path: '*',
     element: <Navigate to="/login" replace />,

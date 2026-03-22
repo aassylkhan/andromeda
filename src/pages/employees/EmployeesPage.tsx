@@ -19,31 +19,30 @@ import {
   Stack,
   InputAdornment,
   Chip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material'
-import { useSnackbar } from 'notistack'
 import AddIcon from '@mui/icons-material/Add'
 import FilterListIcon from '@mui/icons-material/FilterList'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import SearchIcon from '@mui/icons-material/Search'
+import { useSnackbar } from 'notistack'
 import { useAuthStore } from '../../entities/auth'
 import { useDebounce } from '../../shared/hooks/useDebounce'
-import { formatPhoneForUi } from '../../shared/utils/phoneUtils'
 import { hasAnyRole } from '../../shared/utils/roleUtils'
+import { formatPhoneForUi } from '../../shared/utils/phoneUtils'
 import {
   getEmployees,
-  updateEmployeeRole,
-  updateEmployeePhone,
-  takePhoneFrom,
-  updateEmployeeEmail,
   updateEmployeeStatus,
   assignAsHead,
 } from '../../entities/employee/api'
-import { AddEmployeeModal } from '../../features/employee-dialogs/AddEmployeeModal'
-import { FilterModal } from '../../features/employee-dialogs/FilterModal'
-import { EditRoleModal } from '../../features/employee-dialogs/EditRoleModal'
-import { EditPhoneModal } from '../../features/employee-dialogs/EditPhoneModal'
-import { EditEmailModal } from '../../features/employee-dialogs/EditEmailModal'
 import type { Employee, EmployeeRole, EmployeeStatus } from '../../entities/employee/types'
+import { ROLE_LABELS, STATUS_LABELS } from '../../entities/employee/types'
+import { AddEmployeeModal } from '../../features/employee-dialogs/AddEmployeeModal'
+import { EditEmployeeModal } from '../../features/employee-dialogs/EditEmployeeModal'
+import { FilterModal } from '../../features/employee-dialogs/FilterModal'
 
 const EmployeesPage: React.FC = () => {
   const { enqueueSnackbar } = useSnackbar()
@@ -57,35 +56,34 @@ const EmployeesPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedRoles, setSelectedRoles] = useState<EmployeeRole[]>([])
   const [selectedStatuses, setSelectedStatuses] = useState<EmployeeStatus[]>([])
+  const [selectedSupervisors, setSelectedSupervisors] = useState<number[]>([])
 
   const debouncedSearch = useDebounce(searchQuery, 400)
 
   const [openAddModal, setOpenAddModal] = useState(false)
   const [openFilterModal, setOpenFilterModal] = useState(false)
-  const [openEditRoleModal, setOpenEditRoleModal] = useState(false)
-  const [openEditPhoneModal, setOpenEditPhoneModal] = useState(false)
-  const [openEditEmailModal, setOpenEditEmailModal] = useState(false)
-
+  const [openEditModal, setOpenEditModal] = useState(false)
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null)
+
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [contextEmployee, setContextEmployee] = useState<Employee | null>(null)
 
-  const isHeadOrDirector = user && hasAnyRole(user, ['head', 'director'])
+  const [errorModal, setErrorModal] = useState<string | null>(null)
+
   const isDirector = user && hasAnyRole(user, ['director'])
 
   const fetchEmployees = async () => {
     setLoading(true)
     try {
-      const params: any = { page, size }
-      if (debouncedSearch) params.q = debouncedSearch
-      if (selectedRoles.length) params.roles = selectedRoles.join(',')
-      if (selectedStatuses.length) params.statuses = selectedStatuses.join(',')
-
-      const result = await getEmployees(params)
-      const sorted = result.items.sort((a, b) =>
-        `${a.lastName} ${a.firstName}`.localeCompare(`${b.lastName} ${b.firstName}`),
-      )
-      setEmployees(sorted)
+      const result = await getEmployees({
+        page,
+        size,
+        q: debouncedSearch || undefined,
+        roles: selectedRoles.length ? selectedRoles.join(',') : undefined,
+        statuses: selectedStatuses.length ? selectedStatuses.join(',') : undefined,
+        supervisors: selectedSupervisors.length ? selectedSupervisors.join(',') : undefined,
+      })
+      setEmployees(result.items)
       setTotal(result.total)
     } catch (err) {
       enqueueSnackbar(err instanceof Error ? err.message : 'Ошибка при загрузке', { variant: 'error' })
@@ -94,10 +92,10 @@ const EmployeesPage: React.FC = () => {
     }
   }
 
-  useEffect(() => setPage(0), [debouncedSearch, selectedRoles, selectedStatuses])
+  useEffect(() => setPage(0), [debouncedSearch, selectedRoles, selectedStatuses, selectedSupervisors])
   useEffect(() => {
     fetchEmployees()
-  }, [page, size, debouncedSearch, selectedRoles, selectedStatuses])
+  }, [page, size, debouncedSearch, selectedRoles, selectedStatuses, selectedSupervisors])
 
   const handleContextMenu = (e: React.MouseEvent<HTMLElement>, emp: Employee) => {
     setAnchorEl(e.currentTarget)
@@ -108,176 +106,109 @@ const EmployeesPage: React.FC = () => {
     setContextEmployee(null)
   }
 
-  const handleEditRole = () => {
-    if (!contextEmployee) return handleCloseContext()
-    setEditingEmployee(contextEmployee)
-    setOpenEditRoleModal(true)
-    handleCloseContext()
-  }
-
-  const handleEditPhone = () => {
-    if (!contextEmployee) return handleCloseContext()
-    setEditingEmployee(contextEmployee)
-    setOpenEditPhoneModal(true)
-    handleCloseContext()
-  }
-
-  const handleEditEmail = () => {
-    if (!contextEmployee) return handleCloseContext()
-    setEditingEmployee(contextEmployee)
-    setOpenEditEmailModal(true)
-    handleCloseContext()
-  }
-
   const handleToggleStatus = async () => {
     if (!contextEmployee) return handleCloseContext()
+
+    if (contextEmployee.role === 'DIRECTOR') {
+      setErrorModal(`Невозможно ${contextEmployee.status === 'ACTIVE' ? 'деактивировать' : 'активировать'} директора`)
+      handleCloseContext()
+      return
+    }
+    if (contextEmployee.role === 'HEAD' && !isDirector) {
+      setErrorModal(`Вы не можете ${contextEmployee.status === 'ACTIVE' ? 'деактивировать' : 'активировать'} руководителя`)
+      handleCloseContext()
+      return
+    }
+
     try {
-      const newStatus = contextEmployee.status === 'ACTIVE' ? false : true
-      await updateEmployeeStatus(contextEmployee.userId, newStatus)
+      await updateEmployeeStatus(contextEmployee.userId, contextEmployee.status !== 'ACTIVE')
       enqueueSnackbar('Статус обновлен', { variant: 'success' })
       await fetchEmployees()
     } catch (err) {
-      enqueueSnackbar(err instanceof Error ? err.message : 'Ошибка при обновлении статуса', { variant: 'error' })
+      enqueueSnackbar(err instanceof Error ? err.message : 'Ошибка', { variant: 'error' })
     } finally {
       handleCloseContext()
     }
+  }
+
+  const handleEdit = () => {
+    if (!contextEmployee) return handleCloseContext()
+
+    if (contextEmployee.role === 'DIRECTOR') {
+      setErrorModal('Невозможно редактировать директора')
+      handleCloseContext()
+      return
+    }
+    if (contextEmployee.role === 'HEAD' && !isDirector) {
+      setErrorModal('Вы не можете редактировать руководителей')
+      handleCloseContext()
+      return
+    }
+
+    setEditingEmployee(contextEmployee)
+    setOpenEditModal(true)
+    handleCloseContext()
   }
 
   const handleAssignHead = async () => {
     if (!contextEmployee) return handleCloseContext()
+
+    if (!isDirector) {
+      setErrorModal('Вы не можете назначать руководителей')
+      handleCloseContext()
+      return
+    }
+
     try {
       await assignAsHead(contextEmployee.userId)
-      enqueueSnackbar('Назначено руководителем', { variant: 'success' })
+      enqueueSnackbar('Назначен руководителем', { variant: 'success' })
       await fetchEmployees()
     } catch (err) {
-      enqueueSnackbar(err instanceof Error ? err.message : 'Ошибка при назначении', { variant: 'error' })
+      enqueueSnackbar(err instanceof Error ? err.message : 'Ошибка', { variant: 'error' })
     } finally {
       handleCloseContext()
     }
   }
 
-  const handleSaveRole = async (role: EmployeeRole) => {
-    if (!editingEmployee) return
-    try {
-      await updateEmployeeRole(editingEmployee.userId, role)
-      enqueueSnackbar('Роль обновлена', { variant: 'success' })
-      await fetchEmployees()
-      setOpenEditRoleModal(false)
-      setEditingEmployee(null)
-    } catch (err) {
-      enqueueSnackbar(err instanceof Error ? err.message : 'Ошибка при обновлении роли', { variant: 'error' })
-      setOpenEditRoleModal(false)
-      setEditingEmployee(null)
-    }
-  }
-
-  const handleSavePhone = async (phone: string) => {
-    if (!editingEmployee) return
-    try {
-      await updateEmployeePhone(editingEmployee.userId, phone)
-      enqueueSnackbar('Телефон обновлен', { variant: 'success' })
-      await fetchEmployees()
-      setOpenEditPhoneModal(false)
-      setEditingEmployee(null)
-    } catch (error: any) {
-      if (error?.response?.status === 409) throw error
-      enqueueSnackbar(error instanceof Error ? error.message : 'Ошибка при обновлении телефона', { variant: 'error' })
-      setOpenEditPhoneModal(false)
-      setEditingEmployee(null)
-    }
-  }
-
-  const handleTakePhone = async (sourceUserId: number, phone: string) => {
-    if (!editingEmployee) return
-    try {
-      await takePhoneFrom(sourceUserId, editingEmployee.userId, phone)
-      enqueueSnackbar('Телефон перенесен', { variant: 'success' })
-      await fetchEmployees()
-      setOpenEditPhoneModal(false)
-      setEditingEmployee(null)
-    } catch (error: any) {
-      if (error?.response?.status === 409) throw error
-      enqueueSnackbar(error instanceof Error ? error.message : 'Ошибка при переносе номера', { variant: 'error' })
-      setOpenEditPhoneModal(false)
-      setEditingEmployee(null)
-    }
-  }
-
-  const handleSaveEmail = async (email: string) => {
-    if (!editingEmployee) return
-    try {
-      await updateEmployeeEmail(editingEmployee.userId, email)
-      enqueueSnackbar('Email обновлен', { variant: 'success' })
-      await fetchEmployees()
-      setOpenEditEmailModal(false)
-      setEditingEmployee(null)
-    } catch (error: any) {
-      if (error?.response?.status === 409) throw error
-      enqueueSnackbar(error instanceof Error ? error.message : 'Ошибка при обновлении', { variant: 'error' })
-      setOpenEditEmailModal(false)
-      setEditingEmployee(null)
-    }
-  }
-
   return (
-    <Box sx={{ p: 0.5, display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <Typography variant="h2" sx={{ fontWeight: 700, color: '#32353a', fontSize: '2rem' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <Typography variant="h5" sx={{ fontWeight: 700 }}>
         Сотрудники
       </Typography>
 
-      {/* Панель поиска/фильтра/добавления — БЕЗ общей подложки (как Newton) */}
-      <Box
-        sx={{
-          mb: 2,
-          display: 'flex',
-          alignItems: 'center',
-          gap:2,
-          width: '100%',
-        }}
-      >
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
         <TextField
-          placeholder="Поиск по ФИО, номеру, email..."
+          placeholder="Поиск по ФИО, ID, телефону..."
           size="small"
           variant="outlined"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           sx={{
             flex: 1,
-            '& .MuiOutlinedInput-root': {
-              height: 56,
-              borderRadius: 2,
-              bgcolor: '#fff', // инпут сам по себе белый, но без общего Paper
-            },
+            '& .MuiOutlinedInput-root': { height: 48, borderRadius: 2, bgcolor: '#fff' },
           }}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <SearchIcon />
+                <SearchIcon sx={{ color: 'text.disabled' }} />
               </InputAdornment>
             ),
           }}
         />
-
-        <Stack direction="row" spacing={2} sx={{ ml: 'auto' }}>
+        <Stack direction="row" spacing={1.5}>
           <Button
             variant="outlined"
             startIcon={<FilterListIcon />}
             onClick={() => setOpenFilterModal(true)}
-            sx={{
-              height: 56,
-              borderRadius: 2,
-              px: 3,
-              bgcolor: '#fff', // кнопка на белом фоне без общей карточки
-            }}
+            sx={{ height: 48, borderRadius: 2, px: 3, bgcolor: '#fff' }}
           >
             Фильтр
           </Button>
-
           <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => setOpenAddModal(true)}
-            sx={{ height: 56, borderRadius: 2, px: 3 }}
+            sx={{ height: 48, borderRadius: 2, px: 3, whiteSpace: 'nowrap' }}
           >
             Добавить
           </Button>
@@ -285,200 +216,142 @@ const EmployeesPage: React.FC = () => {
       </Box>
 
       <Paper
-        sx={{
-          
-          bgcolor: '#fff',
-          p: 0,
-          borderRadius: 2,
-          boxShadow: '0 0 2px 0 rgba(145,158,171,0.20), 0 12px 24px -4px rgba(145,158,171,0.12)',
-          overflow: 'hidden',
-          flex: 1,
-        }}
+        variant="outlined"
+        sx={{ bgcolor: '#fff', p: 0, borderRadius: 2, overflow: 'hidden' }}
       >
-        {loading && employees.length === 0 && (
-          <Box sx={{ position: 'relative', minHeight: 300 }}>
-            <Box
-              sx={{
-                position: 'absolute',
-                inset: 0,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: '#FFFFFF',
-                zIndex: 1,
-              }}
-            >
-              <CircularProgress size={48} thickness={4} />
-            </Box>
+        {loading && employees.length === 0 ? (
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 300 }}>
+            <CircularProgress size={48} />
           </Box>
-        )}
-
-        {employees.length === 0 && !loading ? (
+        ) : employees.length === 0 && !loading ? (
           <Box sx={{ p: 6, textAlign: 'center', color: 'text.secondary' }}>Сотрудники не найдены</Box>
         ) : (
           <TableContainer>
-            <Table sx={{ bgcolor: '#FFFFFF' }}>
+            <Table size="small" stickyHeader>
               <TableHead>
                 <TableRow
                   sx={{
-                    bgcolor: '#F3F6FB',
-                    '& .MuiTableCell-root': {
-                      bgcolor: '#F3F6FB',
-                      fontWeight: 700,
+                    '& th': {
+                      fontWeight: 600,
                       fontSize: '0.875rem',
                       color: '#637381',
+                      bgcolor: '#F3F6FB',
                       borderBottom: '1px solid rgba(145,158,171,0.20)',
-                      py: 1,
-                      px: 3,
+                      py: 1.5,
+                      px: 2,
                     },
                   }}
                 >
-                  <TableCell>ID</TableCell>
-                  <TableCell>ФИО</TableCell>
-                  <TableCell>WhatsApp</TableCell>
-                  <TableCell>Документ</TableCell>
-                  <TableCell>Email</TableCell>
-                  <TableCell>Роль</TableCell>
+                  <TableCell width={70}>ID</TableCell>
+                  <TableCell>Фамилия и имя</TableCell>
+                  <TableCell>Номер телефона</TableCell>
+                  <TableCell>Должность</TableCell>
                   <TableCell>Статус</TableCell>
-                  <TableCell align="center">Действия</TableCell>
+                  <TableCell>Руководитель</TableCell>
+                  <TableCell width={60} align="right" />
                 </TableRow>
               </TableHead>
-
               <TableBody>
-                {employees.length === 0 && !loading ? (
-                  <TableRow>
-                    <TableCell colSpan={9} align="center" sx={{ py: 8, position: 'relative' }}>
-                      <Box
+                {employees.map((emp) => (
+                  <TableRow key={emp.userId} hover sx={{ '& td': { borderBottom: '1px solid rgba(145,158,171,0.12)', px: 2 } }}>
+                    <TableCell>{emp.userId}</TableCell>
+                    <TableCell>{emp.lastName} {emp.firstName}</TableCell>
+                    <TableCell>{emp.phoneNumber ? formatPhoneForUi(emp.phoneNumber) : '—'}</TableCell>
+                    <TableCell>{ROLE_LABELS[emp.role] || emp.role}</TableCell>
+                    <TableCell>
+                      <Chip
+                        label={STATUS_LABELS[emp.status] || emp.status}
+                        size="small"
                         sx={{
-                          position: 'absolute',
-                          inset: 0,
-                          background:
-                            `radial-gradient(900px 500px at 80% 10%, rgba(46, 97, 255, 0.14), transparent 60%),
-                             radial-gradient(700px 450px at 20% 20%, rgba(156, 81, 255, 0.12), transparent 60%),
-                             radial-gradient(900px 600px at 30% 90%, rgba(255, 92, 122, 0.10), transparent 55%),
-                             #F6F8FB`,
-                          pointerEvents: 'none',
+                          height: 24,
+                          borderRadius: 999,
+                          fontSize: 12,
+                          fontWeight: 700,
+                          ...(emp.status === 'ACTIVE'
+                            ? { bgcolor: '#22C55E', color: '#fff' }
+                            : { bgcolor: 'rgba(145,158,171,0.18)', color: '#637381' }),
                         }}
                       />
-                      <Box sx={{ position: 'relative', zIndex: 1 }}>
-                        <Typography variant="body1" color="text.secondary">
-                          Нет сотрудников для отображения
-                        </Typography>
-                      </Box>
+                    </TableCell>
+                    <TableCell>{emp.supervisorName || '—'}</TableCell>
+                    <TableCell align="right">
+                      <IconButton size="small" onClick={(e) => handleContextMenu(e, emp)}>
+                        <MoreVertIcon fontSize="small" />
+                      </IconButton>
                     </TableCell>
                   </TableRow>
-                ) : (
-                  employees.map((employee) => (
-                    <TableRow
-                      key={employee.userId}
-                      hover
-                      sx={{ '& td': { borderBottom: '1px solid rgba(145,158,171,0.12)', px: 3 } }}
-                    >
-                      <TableCell>{employee.userId}</TableCell>
-                      <TableCell>{`${employee.lastName} ${employee.firstName}`}</TableCell>
-                      <TableCell>{employee.phoneNumber ? formatPhoneForUi(employee.phoneNumber) : '-'}</TableCell>
-                      <TableCell>{employee.iin || '-'}</TableCell>
-                      <TableCell>{employee.email || '-'}</TableCell>
-                      <TableCell>{employee.role}</TableCell>
-                      <TableCell>
-                        {employee.status === 'ACTIVE' ? (
-                          <Chip
-                            label="Активный"
-                            sx={{
-                              height: 24,
-                              borderRadius: 999,
-                              fontSize: 12,
-                              fontWeight: 700,
-                              bgcolor: '#22C55E',
-                              color: '#fff',
-                            }}
-                          />
-                        ) : (
-                          <Chip
-                            label="Неактивный"
-                            sx={{
-                              height: 24,
-                              borderRadius: 999,
-                              fontSize: 12,
-                              fontWeight: 700,
-                              bgcolor: 'rgba(145,158,171,0.18)',
-                              color: '#637381',
-                            }}
-                          />
-                        )}
-                      </TableCell>
-                      <TableCell align="center">
-                        <IconButton
-                          size="small"
-                          onClick={(e) => handleContextMenu(e, employee)}
-                          disabled={!isHeadOrDirector}
-                        >
-                          <MoreVertIcon fontSize="small" />
-                        </IconButton>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
+                ))}
               </TableBody>
             </Table>
           </TableContainer>
         )}
+
+        <TablePagination
+          rowsPerPageOptions={[10, 20, 50]}
+          component="div"
+          count={total}
+          rowsPerPage={size}
+          page={page}
+          onPageChange={(_, p) => setPage(p)}
+          onRowsPerPageChange={(e) => {
+            setSize(parseInt(e.target.value, 10))
+            setPage(0)
+          }}
+          labelRowsPerPage="Строк на странице"
+          labelDisplayedRows={({ from, to, count }) =>
+            `${from}–${to} из ${count !== -1 ? count : `более ${to}`}`
+          }
+        />
       </Paper>
 
-      <TablePagination
-        rowsPerPageOptions={[10, 20, 50]}
-        component="div"
-        count={total}
-        rowsPerPage={size}
-        page={page}
-        onPageChange={(_, newPage) => setPage(newPage)}
-        onRowsPerPageChange={(e) => setSize(parseInt(e.target.value, 10))}
-      />
-
       <Menu anchorEl={anchorEl} open={!!anchorEl} onClose={handleCloseContext}>
-        <MenuItem onClick={handleEditRole}>Редактировать роль</MenuItem>
-        <MenuItem onClick={handleEditEmail}>Редактировать email</MenuItem>
-        <MenuItem onClick={handleEditPhone}>Редактировать номер</MenuItem>
         <MenuItem onClick={handleToggleStatus}>
           {contextEmployee?.status === 'ACTIVE' ? 'Деактивировать' : 'Активировать'}
         </MenuItem>
-        {isDirector && <MenuItem onClick={handleAssignHead}>Назначить руководителем</MenuItem>}
+        <MenuItem onClick={handleEdit}>Редактировать</MenuItem>
+        <MenuItem onClick={handleAssignHead}>Назначить руководителем</MenuItem>
       </Menu>
 
-      <AddEmployeeModal open={openAddModal} onClose={() => setOpenAddModal(false)} onSuccess={fetchEmployees} />
+      <AddEmployeeModal
+        open={openAddModal}
+        onClose={() => setOpenAddModal(false)}
+        onSuccess={fetchEmployees}
+      />
 
       <FilterModal
         open={openFilterModal}
         onClose={() => setOpenFilterModal(false)}
-        onApply={(roles, statuses) => {
+        onApply={(roles, statuses, supervisors) => {
           setSelectedRoles(roles)
           setSelectedStatuses(statuses)
+          setSelectedSupervisors(supervisors)
         }}
         initialRoles={selectedRoles}
         initialStatuses={selectedStatuses}
+        initialSupervisors={selectedSupervisors}
       />
 
-      <EditRoleModal
-        open={openEditRoleModal}
-        onClose={() => setOpenEditRoleModal(false)}
-        onSave={handleSaveRole}
-        initialRole={editingEmployee?.role as EmployeeRole}
+      <EditEmployeeModal
+        open={openEditModal}
+        onClose={() => {
+          setOpenEditModal(false)
+          setEditingEmployee(null)
+        }}
+        onSuccess={fetchEmployees}
+        employee={editingEmployee}
       />
 
-      <EditPhoneModal
-        open={openEditPhoneModal}
-        onClose={() => setOpenEditPhoneModal(false)}
-        onSave={handleSavePhone}
-        onTakePhone={handleTakePhone}
-        currentPhone={editingEmployee?.phoneNumber || ''}
-      />
-
-      <EditEmailModal
-        open={openEditEmailModal}
-        onClose={() => setOpenEditEmailModal(false)}
-        onSave={handleSaveEmail}
-        currentEmail={editingEmployee?.email || ''}
-      />
+      <Dialog open={!!errorModal} onClose={() => setErrorModal(null)} maxWidth="xs" fullWidth>
+        <DialogTitle>Ошибка</DialogTitle>
+        <DialogContent>
+          <Typography variant="body1" sx={{ mt: 1 }}>{errorModal}</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button variant="contained" onClick={() => setErrorModal(null)}>
+            ОК
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   )
 }

@@ -19,7 +19,6 @@ export function CodePage() {
   const { login, phoneNumber, loading, error, clearError } = useAuthStore()
   const [code, setCode] = useState('')
 
-  // Если нет номера телефона - редирект на /login
   useEffect(() => {
     if (!phoneNumber) {
       navigate('/login')
@@ -29,32 +28,22 @@ export function CodePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     clearError()
-
-    if (!phoneNumber || code.length !== 6) {
-      return
-    }
+    if (!phoneNumber || code.length !== 6) return
 
     try {
       await login(phoneNumber, code)
       navigate('/')
-    } catch (error) {
-      console.error('Login error:', error)
+    } catch {
+      // error is set in store
     }
   }
 
   const handleCodeChange = (value: string) => {
-    // Только цифры, макс 6 символов
     const digits = value.replace(/\D/g, '').slice(0, 6)
     setCode(digits)
   }
 
-  const handleBackToLogin = () => {
-    navigate('/login')
-  }
-
-  if (!phoneNumber) {
-    return null
-  }
+  if (!phoneNumber) return null
 
   return (
     <Box
@@ -64,19 +53,6 @@ export function CodePage() {
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: 'background.default',
-        position: 'relative',
-        overflow: 'hidden',
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          inset: 0,
-          background:
-            `radial-gradient(900px 500px at 80% 10%, rgba(46, 97, 255, 0.14), transparent 60%),
-             radial-gradient(700px 450px at 20% 20%, rgba(156, 81, 255, 0.12), transparent 60%),
-             radial-gradient(900px 600px at 30% 90%, rgba(255, 92, 122, 0.10), transparent 55%),
-             #F6F8FB`,
-          pointerEvents: 'none',
-        },
       }}
     >
       <Container maxWidth="sm" sx={{ position: 'relative', zIndex: 1 }}>
@@ -133,12 +109,7 @@ export function CodePage() {
               variant="contained"
               size="large"
               disabled={loading || code.length !== 6}
-              sx={{
-                py: 1.5,
-                fontSize: '1rem',
-                fontWeight: 600,
-                mb: 2,
-              }}
+              sx={{ py: 1.5, fontSize: '1rem', fontWeight: 600, mb: 2 }}
             >
               {loading ? <CircularProgress size={24} color="inherit" /> : 'Войти'}
             </Button>
@@ -148,7 +119,7 @@ export function CodePage() {
                 component="button"
                 type="button"
                 variant="body2"
-                onClick={handleBackToLogin}
+                onClick={() => navigate('/login')}
                 sx={{ cursor: 'pointer' }}
               >
                 Изменить номер телефона

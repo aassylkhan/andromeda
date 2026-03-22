@@ -1,114 +1,61 @@
 import { create } from 'zustand'
-import type { Employee } from './index'
-import { getEmployees, searchEmployees } from './index'
+import { getEmployees } from './api'
+import type { Employee, EmployeeRole, EmployeeStatus } from './types'
 
-export interface EmployeeStoreState {
-  items: Employee[]
+interface EmployeeState {
+  employees: Employee[]
   total: number
   loading: boolean
-  error?: string
-  q: string
-  roleFilter: string
-  statusFilter: string
+  error: string | null
   page: number
   size: number
+  searchQuery: string
+  selectedRoles: EmployeeRole[]
+  selectedStatuses: EmployeeStatus[]
 }
 
-export interface EmployeeStoreActions {
-  setQuery: (q: string) => void
-  setRoleFilter: (role: string) => void
-  setStatusFilter: (status: string) => void
+interface EmployeeActions {
+  fetchEmployees: () => Promise<void>
   setPage: (page: number) => void
   setSize: (size: number) => void
-  fetchEmployees: () => Promise<void>
-  refetch: () => Promise<void>
+  setSearchQuery: (q: string) => void
+  setSelectedRoles: (roles: EmployeeRole[]) => void
+  setSelectedStatuses: (statuses: EmployeeStatus[]) => void
 }
 
-export type EmployeeStore = EmployeeStoreState & EmployeeStoreActions
+type EmployeeStore = EmployeeState & EmployeeActions
 
 export const useEmployeeStore = create<EmployeeStore>((set, get) => ({
-  items: [],
+  employees: [],
   total: 0,
   loading: false,
-  error: undefined,
-  q: '',
-  roleFilter: '',
-  statusFilter: '',
+  error: null,
   page: 0,
   size: 20,
-
-  setQuery: (q: string) => {
-    set({ q, error: undefined, page: 0 })
-  },
-
-  setRoleFilter: (role: string) => {
-    set({ roleFilter: role, error: undefined, page: 0 })
-  },
-
-  setStatusFilter: (status: string) => {
-    set({ statusFilter: status, error: undefined, page: 0 })
-  },
-
-  setPage: (page: number) => {
-    set({ page })
-  },
-
-  setSize: (size: number) => {
-    set({ size, page: 0 })
-  },
+  searchQuery: '',
+  selectedRoles: [],
+  selectedStatuses: [],
 
   fetchEmployees: async () => {
-    const { loading, q, roleFilter, statusFilter, page, size } = get()
-
-    if (loading) {
-      return
-    }
-
-    set({ loading: true, error: undefined })
-
+    const { page, size, searchQuery, selectedRoles, selectedStatuses } = get()
+    set({ loading: true, error: null })
     try {
-      let items: Employee[]
-      let total: number
-
-      // Use searchEmployees if there's a query, otherwise use getEmployees with filters
-      if (q) {
-        const result = await searchEmployees({
-          q,
-          roles: roleFilter || undefined,
-          statuses: statusFilter || undefined,
-          page,
-          size,
-        })
-        items = result.items
-        total = result.total
-      } else {
-        const result = await getEmployees({
-          roles: roleFilter || undefined,
-          statuses: statusFilter || undefined,
-          page,
-          size,
-        })
-        items = result.items
-        total = result.total
-      }
-
-      set({
-        items,
-        total,
-        loading: false,
+      const result = await getEmployees({
+        page,
+        size,
+        q: searchQuery || undefined,
+        roles: selectedRoles.length ? selectedRoles.join(',') : undefined,
+        statuses: selectedStatuses.length ? selectedStatuses.join(',') : undefined,
       })
+      set({ employees: result.items, total: result.total, loading: false })
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Failed to fetch employees'
-
-      set({
-        error: errorMessage,
-        loading: false,
-      })
+      set({ error: error instanceof Error ? error.message : 'Ошибка', loading: false })
     }
   },
 
-  refetch: async () => {
-    await get().fetchEmployees()
-  },
+  setPage: (page) => set({ page }),
+  setSize: (size) => set({ size }),
+  setSearchQuery: (searchQuery) => set({ searchQuery }),
+  setSelectedRoles: (selectedRoles) => set({ selectedRoles }),
+  setSelectedStatuses: (selectedStatuses) => set({ selectedStatuses }),
 }))

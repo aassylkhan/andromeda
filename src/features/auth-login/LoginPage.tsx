@@ -9,6 +9,7 @@ import {
   Container,
   Alert,
   CircularProgress,
+  InputAdornment,
 } from '@mui/material'
 import { RocketLogo } from '../../components/RocketLogo'
 import { useAuthStore } from '../../entities/auth'
@@ -16,27 +17,23 @@ import { useAuthStore } from '../../entities/auth'
 export function LoginPage() {
   const navigate = useNavigate()
   const { sendCode, loading, error, clearError } = useAuthStore()
-  const [phoneNumber, setPhoneNumber] = useState('')
+  const [phoneDigits, setPhoneDigits] = useState('')
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Оставляем только цифры
     const digits = e.target.value.replace(/\D/g, '')
-    setPhoneNumber(digits)
+    setPhoneDigits(digits)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     clearError()
-
-    if (!phoneNumber.trim()) {
-      return
-    }
+    if (!phoneDigits.trim()) return
 
     try {
-      await sendCode(phoneNumber)
+      await sendCode(`+${phoneDigits}`)
       navigate('/login/code')
-    } catch (error) {
-      console.error('Send code error:', error)
+    } catch {
+      // error is set in store
     }
   }
 
@@ -48,19 +45,6 @@ export function LoginPage() {
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: 'background.default',
-        position: 'relative',
-        overflow: 'hidden',
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          inset: 0,
-          background:
-            `radial-gradient(900px 500px at 80% 10%, rgba(46, 97, 255, 0.14), transparent 60%),
-             radial-gradient(700px 450px at 20% 20%, rgba(156, 81, 255, 0.12), transparent 60%),
-             radial-gradient(900px 600px at 30% 90%, rgba(255, 92, 122, 0.10), transparent 55%),
-             #F6F8FB`,
-          pointerEvents: 'none',
-        },
       }}
     >
       <Container maxWidth="sm" sx={{ position: 'relative', zIndex: 1 }}>
@@ -78,10 +62,10 @@ export function LoginPage() {
               <RocketLogo size={80} />
             </Box>
             <Typography variant="h4" component="h1" fontWeight={700} gutterBottom>
-              Вход в систему для сотрудников
+              Вход в платформу для сотрудников
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Введите номер WhatsApp для получения кода
+              Введите номер телефона для получения кода
             </Typography>
           </Box>
 
@@ -94,18 +78,24 @@ export function LoginPage() {
           <form onSubmit={handleSubmit}>
             <TextField
               fullWidth
-              label="WhatsApp номер"
+              label="Номер телефона"
               type="text"
-              placeholder="7 (___) ___-__-__"
-              value={phoneNumber}
+              placeholder="7XXXXXXXXXX"
+              value={phoneDigits}
               onChange={handlePhoneChange}
               disabled={loading}
               sx={{ mb: 3 }}
               autoFocus
               required
               inputProps={{
-                inputMode: 'numeric',
-                pattern: '[0-9]*',
+                inputMode: 'tel',
+              }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start" sx={{ mr: 0 }}>
+                    <Typography sx={{ fontWeight: 600, color: 'text.primary', fontSize: '1rem' }}>+</Typography>
+                  </InputAdornment>
+                ),
               }}
             />
 
@@ -114,18 +104,10 @@ export function LoginPage() {
               type="submit"
               variant="contained"
               size="large"
-              disabled={loading || !phoneNumber.trim()}
-              sx={{
-                py: 1.5,
-                fontSize: '1rem',
-                fontWeight: 600,
-              }}
+              disabled={loading || !phoneDigits.trim()}
+              sx={{ py: 1.5, fontSize: '1rem', fontWeight: 600 }}
             >
-              {loading ? (
-                <CircularProgress size={24} color="inherit" />
-              ) : (
-                'Получить код'
-              )}
+              {loading ? <CircularProgress size={24} color="inherit" /> : 'Получить код'}
             </Button>
           </form>
         </Paper>

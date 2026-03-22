@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import {
-  AppBar,
   Avatar,
   Box,
   Button,
@@ -9,160 +8,124 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
-  DialogContentText,
   DialogTitle,
+  Divider,
   Drawer,
   IconButton,
   ListItem,
   ListItemButton,
   Toolbar,
   Typography,
+  AppBar,
   useMediaQuery,
   useTheme,
 } from '@mui/material'
 import MenuIcon from '@mui/icons-material/Menu'
-import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined'
-import EventNoteOutlinedIcon from '@mui/icons-material/EventNoteOutlined'
-import ListAltOutlinedIcon from '@mui/icons-material/ListAltOutlined'
-import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined'
+import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline'
+import BadgeOutlinedIcon from '@mui/icons-material/BadgeOutlined'
+import DevicesOutlinedIcon from '@mui/icons-material/DevicesOutlined'
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded'
 
 import logo from '../../assets/Yadro by Andromeda-4.png'
 import { useAuthStore } from '../../entities/auth'
+import { formatPhoneForUi } from '../../shared/utils/phoneUtils'
 
-const DRAWER_WIDTH = 350
-
-// ✅ Внешний зазор от плашек до края Drawer (8px = 1, 12px = 1.5, 16px = 2)
-const LIST_GUTTER_X = 0
+const DRAWER_WIDTH = 300
 
 const NAV = {
   bg: '#ffffff',
-  border: 'rgba(66, 0, 172, 0.12)',
-
-  itemHeight: 55,
-  iconSize: 25,
-  iconBox: 25,
-  fontSize: 16,
-
-  itemColor: 'rgb(117, 114, 136)',
-  itemActiveColor: 'rgba(97, 91, 104, 0.92)',
-
-  itemHoverBg: 'rgba(114, 74, 187, 0.12)',
-  itemActiveBg: 'rgba(108, 77, 182, 0.26)',
+  border: 'rgba(145, 158, 171, 0.12)',
+  itemHeight: 44,
+  iconSize: 24,
+  itemColor: '#637381',
+  itemActiveColor: '#5C2E66',
+  itemActiveBg: 'rgba(92, 46, 102, 0.08)',
+  itemHoverBg: 'rgba(92, 46, 102, 0.04)',
 }
-
-const BRAND_BG = `
-  radial-gradient(1200px 740px at 18% 12%, rgba(37, 41, 101, 0.10), transparent 60%),
-  radial-gradient(980px 720px at 82% 18%, rgba(75, 42, 100, 0.09), transparent 62%),
-  radial-gradient(1150px 820px at 46% 92%, rgba(201, 96, 107, 0.10), transparent 58%),
-  #F6F7FB
-`
 
 export function AppLayout() {
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
 
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [logoutDialogOpen, setLogoutDialogOpen] = useState(false)
 
   const navigate = useNavigate()
   const location = useLocation()
 
   const user = useAuthStore((s) => s.user)
-  const logout = useAuthStore((s) => (s as any).logout)
+  const logoutFn = useAuthStore((s) => s.logout)
 
-  const handleDrawerToggle = () => setMobileOpen((v) => !v)
-
-  const menuItems: Array<{
-    label: string
-    icon: React.ReactNode
-    path: string
-    sectionKey?: keyof NonNullable<typeof user>['sections']
-  }> = useMemo(
+  const menuItems = useMemo(
     () => [
       {
+        label: 'Все пользователи',
+        icon: <PeopleOutlineIcon sx={{ width: NAV.iconSize, height: NAV.iconSize }} />,
+        path: '/users',
+        sectionKey: 'users' as const,
+      },
+      {
         label: 'Сотрудники',
-        icon: <PeopleAltOutlinedIcon sx={{ width: NAV.iconSize, height: NAV.iconSize }} />,
+        icon: <BadgeOutlinedIcon sx={{ width: NAV.iconSize, height: NAV.iconSize }} />,
         path: '/employees',
-        sectionKey: 'employees',
+        sectionKey: 'employees' as const,
       },
       {
-        label: 'Мои сессии',
-        icon: <EventNoteOutlinedIcon sx={{ width: NAV.iconSize, height: NAV.iconSize }} />,
-        path: '/my-sessions',
-        sectionKey: 'mySessions',
-      },
-      {
-        label: 'Все сессии',
-        icon: <ListAltOutlinedIcon sx={{ width: NAV.iconSize, height: NAV.iconSize }} />,
+        label: 'Сессии входа',
+        icon: <DevicesOutlinedIcon sx={{ width: NAV.iconSize, height: NAV.iconSize }} />,
         path: '/sessions',
-        sectionKey: 'admin',
+        sectionKey: 'sessions' as const,
       },
     ],
     []
   )
 
-  const visibleMenuItems = useMemo(() => {
-    return menuItems.filter((item) => {
-      if (!item.sectionKey) return true
-      return Boolean(user?.sections?.[item.sectionKey])
-    })
-  }, [menuItems, user])
+  const visibleMenuItems = useMemo(
+    () =>
+      menuItems.filter((item) => {
+        if (!item.sectionKey) return true
+        return Boolean(user?.sections?.[item.sectionKey])
+      }),
+    [menuItems, user]
+  )
 
-  const renderNavItem = (
-    item: { label: string; icon: React.ReactNode; path: string },
-    onClick?: () => void
-  ) => {
-    const isActived = location.pathname === item.path || location.pathname.startsWith(`${item.path}/`)
+  const handleLogout = async () => {
+    setLogoutDialogOpen(false)
+    try {
+      await logoutFn()
+    } finally {
+      navigate('/login')
+    }
+  }
+
+  const renderNavItem = (item: { label: string; icon: React.ReactNode; path: string }) => {
+    const isActive = location.pathname === item.path || location.pathname.startsWith(`${item.path}/`)
 
     return (
       <ListItem disableGutters disablePadding key={item.label}>
         <ListItemButton
           disableGutters
-          disableRipple
-          disableTouchRipple
           onClick={() => {
-            if (onClick) onClick()
-            else navigate(item.path)
+            navigate(item.path)
             if (isMobile) setMobileOpen(false)
           }}
           sx={{
-            width: '100%', // ✅ важно: плашка занимает ширину списка (а список уже с padding)
-            mb: -1,
-            px: 2.5,
-            py: 2,
-            gap: 3,
-            borderRadius: 1,
-
+            pl: 2,
+            py: 1,
+            gap: 2,
+            pr: 1.5,
+            borderRadius: 0.75,
+            typography: 'body2',
+            fontWeight: isActive ? 700 : 500,
+            color: isActive ? NAV.itemActiveColor : NAV.itemColor,
             minHeight: `${NAV.itemHeight}px`,
-            fontSize: NAV.fontSize,
-            lineHeight: '24px',
-
-            fontWeight: isActived ? 700 : 600,
-            color: isActived ? NAV.itemActiveColor : NAV.itemColor,
-
-            '&:hover': { bgcolor: NAV.itemHoverBg },
-
-            ...(isActived && {
-              bgcolor: NAV.itemActiveBg,
-              '&:hover': { bgcolor: NAV.itemHoverBg },
-            }),
+            bgcolor: isActive ? NAV.itemActiveBg : 'transparent',
+            '&:hover': { bgcolor: isActive ? NAV.itemActiveBg : NAV.itemHoverBg },
           }}
         >
-          <Box
-            component="span"
-            sx={{
-              width: NAV.iconBox,
-              height: NAV.iconBox,
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-            }}
-          >
+          <Box component="span" sx={{ width: 24, height: 24, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
             {item.icon}
           </Box>
-
           <Box component="span" sx={{ flexGrow: 1 }}>
             {item.label}
           </Box>
@@ -172,19 +135,20 @@ export function AppLayout() {
   }
 
   const drawerContent = (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', pt: 2.5, px: 2.5 }}>
       {/* Logo */}
       <Box sx={{ mb: 2 }}>
         <Box
           component="img"
           src={logo}
-          alt="Andromeda"
+          alt="Ядро by Андромеда"
           onClick={() => {
-            navigate('/employees')
+            const first = visibleMenuItems[0]
+            navigate(first?.path ?? '/')
             if (isMobile) setMobileOpen(false)
           }}
           sx={{
-            height: 120,
+            height: 60,
             width: 'auto',
             maxWidth: '100%',
             objectFit: 'contain',
@@ -197,129 +161,73 @@ export function AppLayout() {
 
       {/* Menu */}
       <Box component="nav" display="flex" flex="1 1 auto" flexDirection="column">
-        <Box
-          component="ul"
-          sx={{
-            m: 0,
-            p: 0,
-            px: LIST_GUTTER_X, // ✅ вот он: внешний зазор от плашки до края Drawer
-            listStyle: 'none',
-            boxSizing: 'border-box',
-          }}
-          gap={0.75}
-          display="flex"
-          flexDirection="column"
-        >
+        <Box component="ul" sx={{ m: 0, p: 0, listStyle: 'none' }} gap={0.5} display="flex" flexDirection="column">
           {visibleMenuItems.map((item) => renderNavItem(item))}
         </Box>
       </Box>
 
-      {/* Bottom (profile + actions) */}
-      <Box sx={{ mt: 2 }}>
-        {user && (
-          <Box
+      {/* Bottom: user info + logout */}
+      <Divider sx={{ my: 1.5 }} />
+
+      {user && (
+        <Box sx={{ px: 1.5, pb: 0.5, display: 'flex', alignItems: 'center' }}>
+          <Avatar sx={{ mr: 1, width: 40, height: 40, bgcolor: NAV.itemActiveColor, fontSize: 14 }}>
+            {(user.lastName?.[0] ?? '').toUpperCase()}
+            {(user.firstName?.[0] ?? '').toUpperCase()}
+          </Avatar>
+          <Box sx={{ minWidth: 0 }}>
+            <Typography noWrap variant="subtitle2" sx={{ fontWeight: 700 }}>
+              {[user.lastName, user.firstName].filter(Boolean).join(' ') || '—'}
+              {' '}
+              <Typography component="span" variant="body2" sx={{ color: 'text.secondary', fontWeight: 400 }}>
+                (ID: {user.userId})
+              </Typography>
+            </Typography>
+            <Typography noWrap variant="body2" color="text.secondary">
+              {user.phoneNumber ? formatPhoneForUi(user.phoneNumber) : '—'}
+            </Typography>
+          </Box>
+        </Box>
+      )}
+
+      <Box sx={{ p: 1.5 }}>
+        <ListItem disableGutters disablePadding>
+          <ListItemButton
+            disableGutters
+            onClick={() => setLogoutDialogOpen(true)}
             sx={{
-              px: LIST_GUTTER_X, // ✅ чтобы профиль по краям совпадал со списком
-              pb: 1.5,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1.25,
+              pl: 2,
+              py: 1,
+              gap: 2,
+              pr: 1.5,
+              borderRadius: 0.75,
+              typography: 'body2',
+              fontWeight: 500,
+              color: NAV.itemColor,
+              minHeight: `${NAV.itemHeight}px`,
+              '&:hover': { bgcolor: NAV.itemHoverBg },
             }}
           >
-            <Avatar sx={{ width: 40, height: 40 }}>
-              {(user.firstName?.[0] ?? '').toUpperCase()}
-              {(user.lastName?.[0] ?? '').toUpperCase()}
-            </Avatar>
-
-            <Box sx={{ minWidth: 0 }}>
-              <Typography noWrap sx={{ fontWeight: 800, fontSize: 14.5, lineHeight: '20px' }}>
-                {[user.firstName, user.lastName].filter(Boolean).join(' ') || '—'}
-              </Typography>
-
-              <Typography noWrap sx={{ fontSize: 13.5 }} color="text.secondary">
-                {user.phoneNumber ?? user.email ?? '—'}
-              </Typography>
+            <Box component="span" sx={{ width: 24, height: 24, display: 'inline-flex' }}>
+              <LogoutRoundedIcon />
             </Box>
-          </Box>
-        )}
-
-        <Box
-          component="ul"
-          sx={{
-            m: 0,
-            p: 0,
-            mb: 1,
-            px: LIST_GUTTER_X, // ✅ тот же внешний зазор для нижних кнопок
-            listStyle: 'none',
-            boxSizing: 'border-box',
-          }}
-          gap={0.75}
-          display="flex"
-          flexDirection="column"
-          
-        >
-          {renderNavItem(
-            {
-              label: 'Мои данные',
-              icon: <SettingsOutlinedIcon sx={{ width: NAV.iconSize, height: NAV.iconSize }} />,
-              path: '/__settings',
-            },
-            () => setSettingsOpen(true)
-          )}
-
-          {renderNavItem(
-            {
-              label: 'Выйти',
-              icon: <LogoutRoundedIcon sx={{ width: NAV.iconSize, height: NAV.iconSize }} />,
-              path: '/__logout',
-            },
-            async () => {
-              try {
-                if (typeof logout === 'function') await logout()
-                else {
-                  localStorage.removeItem('accessToken')
-                  localStorage.removeItem('refreshToken')
-                }
-              } finally {
-                navigate('/login')
-              }
-            }
-          )}
-        </Box>
+            <Box component="span" flexGrow={1}>
+              Выйти
+            </Box>
+          </ListItemButton>
+        </ListItem>
       </Box>
 
-      {/* Settings dialog */}
-      <Dialog open={settingsOpen} onClose={() => setSettingsOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontWeight: 800 }}>Мои данные</DialogTitle>
-        <DialogContent dividers>
-          <DialogContentText sx={{ mb: 2, color: 'text.secondary' }}>
-            Просмотр информации вашего профиля.
-          </DialogContentText>
-
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
-            <Row label="ID" value={user?.userId ?? '—'} />
-            <Row label="Фамилия" value={user?.lastName ?? '—'} />
-            <Row label="Имя" value={user?.firstName ?? '—'} />
-            <Row label="Email" value={user?.email ?? '—'} />
-            <Row label="Телефон" value={user?.phoneNumber ?? '—'} />
-            <Row label="Роли" value={user?.roles?.join(', ') ?? '—'} />
-            <Row
-              label="Доступ"
-              value={
-                user?.sections
-                  ? Object.entries(user.sections)
-                      .filter(([, val]) => val)
-                      .map(([key]) => key)
-                      .join(', ') || '—'
-                  : '—'
-              }
-            />
-          </Box>
+      {/* Logout confirm dialog */}
+      <Dialog open={logoutDialogOpen} onClose={() => setLogoutDialogOpen(false)} maxWidth="xs" fullWidth>
+        <DialogTitle>Выход</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2">Вы уверены, что хотите выйти из системы?</Typography>
         </DialogContent>
-
         <DialogActions>
-          <Button onClick={() => setSettingsOpen(false)} sx={{ textTransform: 'none', fontWeight: 700 }}>
-            Закрыть
+          <Button onClick={() => setLogoutDialogOpen(false)}>Отмена</Button>
+          <Button variant="contained" onClick={handleLogout}>
+            Выйти
           </Button>
         </DialogActions>
       </Dialog>
@@ -327,111 +235,79 @@ export function AppLayout() {
   )
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        minHeight: '100vh',
-        position: 'relative',
-        bgcolor: '#F6F7FB',
-        '&::before': {
-          content: '""',
-          position: 'fixed',
-          inset: 0,
-          background: BRAND_BG,
-          pointerEvents: 'none',
-          zIndex: 0,
-        },
-      }}
-    >
+    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#F9FAFB' }}>
       <CssBaseline />
 
-      <Box sx={{ display: 'flex', flex: 1, width: '100%', position: 'relative', zIndex: 1 }}>
-        {isMobile && (
-          <AppBar
-            position="fixed"
-            elevation={0}
-            sx={{
-              bgcolor: NAV.bg,
-              borderBottom: `1px solid ${NAV.border}`,
-              color: NAV.itemActiveColor,
-            }}
-          >
-            <Toolbar sx={{ minHeight: 64, display: 'flex', gap: 1 }}>
-              <IconButton onClick={handleDrawerToggle} edge="start" sx={{ color: NAV.itemActiveColor }}>
-                <MenuIcon />
-              </IconButton>
-              <Typography sx={{ fontWeight: 800, fontSize: 16 }}>Andromeda CRM</Typography>
-            </Toolbar>
-          </AppBar>
-        )}
-
-        <Box component="nav" sx={{ width: { md: DRAWER_WIDTH }, flexShrink: { md: 0 } }}>
-          {isMobile ? (
-            <Drawer
-              variant="temporary"
-              open={mobileOpen}
-              onClose={handleDrawerToggle}
-              ModalProps={{ keepMounted: true }}
-              sx={{
-                display: { xs: 'block', md: 'none' },
-                '& .MuiDrawer-paper': {
-                  pt: 2.5,
-                  px: 2.5,
-                  overflow: 'unset',
-                  width: DRAWER_WIDTH,
-                  bgcolor: NAV.bg,
-                },
-              }}
-            >
-              {drawerContent}
-            </Drawer>
-          ) : (
-            <Drawer
-              variant="permanent"
-              open
-              sx={{
-                display: { xs: 'none', md: 'block' },
-                '& .MuiDrawer-paper': {
-                  pt: 2.5,
-                  px: 2.5,
-                  overflow: 'unset',
-                  width: DRAWER_WIDTH,
-                  bgcolor: NAV.bg,
-                  borderRight: `1px solid ${NAV.border}`,
-                },
-              }}
-            >
-              {drawerContent}
-            </Drawer>
-          )}
-        </Box>
-
-        <Box
-          component="main"
+      {isMobile && (
+        <AppBar
+          position="fixed"
+          elevation={0}
           sx={{
-            flexGrow: 1,
-            width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
-            pt: isMobile ? 10 : 3,
-            px: 3,
-            pb: 3,
+            bgcolor: NAV.bg,
+            borderBottom: `1px solid ${NAV.border}`,
+            color: '#1C252E',
           }}
         >
-          <Box sx={{ maxWidth: 1300, mx: 'auto' }}>
-            <Outlet />
-          </Box>
+          <Toolbar sx={{ minHeight: 64, display: 'flex', gap: 1 }}>
+            <IconButton onClick={() => setMobileOpen((v) => !v)} edge="start">
+              <MenuIcon />
+            </IconButton>
+            <Typography sx={{ fontWeight: 700, fontSize: 16 }}>Ядро</Typography>
+          </Toolbar>
+        </AppBar>
+      )}
+
+      <Box component="nav" sx={{ width: { md: DRAWER_WIDTH }, flexShrink: { md: 0 } }}>
+        {isMobile ? (
+          <Drawer
+            variant="temporary"
+            open={mobileOpen}
+            onClose={() => setMobileOpen(false)}
+            ModalProps={{ keepMounted: true }}
+            sx={{
+              display: { xs: 'block', md: 'none' },
+              '& .MuiDrawer-paper': {
+                overflow: 'unset',
+                width: DRAWER_WIDTH,
+                bgcolor: NAV.bg,
+              },
+            }}
+          >
+            {drawerContent}
+          </Drawer>
+        ) : (
+          <Drawer
+            variant="permanent"
+            open
+            sx={{
+              display: { xs: 'none', md: 'block' },
+              '& .MuiDrawer-paper': {
+                overflow: 'unset',
+                width: DRAWER_WIDTH,
+                bgcolor: NAV.bg,
+                borderRight: `1px solid ${NAV.border}`,
+              },
+            }}
+          >
+            {drawerContent}
+          </Drawer>
+        )}
+      </Box>
+
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
+          pt: isMobile ? 10 : 3,
+          px: { xs: 2, md: 4 },
+          pb: 3,
+        }}
+      >
+        <Box sx={{ maxWidth: 1400, mx: 'auto' }}>
+          <Outlet />
         </Box>
       </Box>
-    </Box>
-  )
-}
-
-function Row({ label, value }: { label: string; value: React.ReactNode }) {
-  return (
-    <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2 }}>
-      <Typography sx={{ color: 'text.secondary', fontWeight: 600 }}>{label}</Typography>
-      <Typography sx={{ textAlign: 'right', fontWeight: 700 }}>
-        {value}
-      </Typography>
     </Box>
   )
 }

@@ -4,14 +4,13 @@ export interface AuthTokens {
 }
 
 export interface UserSections {
-  admin: boolean
+  users: boolean
   employees: boolean
-  mySessions: boolean
+  sessions: boolean
 }
 
 export interface User {
   userId: number
-  email: string
   firstName: string
   lastName: string
   phoneNumber: string
