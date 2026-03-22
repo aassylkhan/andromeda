@@ -62,7 +62,7 @@ export function AppLayout() {
         label: 'Все пользователи',
         icon: <PeopleOutlineIcon sx={{ width: NAV.iconSize, height: NAV.iconSize }} />,
         path: '/users',
-        sectionKey: 'users' as const,
+        sectionKey: 'allUsers' as const,
       },
       {
         label: 'Сотрудники',
@@ -74,7 +74,7 @@ export function AppLayout() {
         label: 'Сессии входа',
         icon: <DevicesOutlinedIcon sx={{ width: NAV.iconSize, height: NAV.iconSize }} />,
         path: '/sessions',
-        sectionKey: 'sessions' as const,
+        sectionKey: 'mySessions' as const,
       },
     ],
     []
