@@ -12,7 +12,6 @@ import {
   CircularProgress,
   InputAdornment,
 } from '@mui/material'
-import PhoneIphoneIcon from '@mui/icons-material/PhoneIphone'
 import logo from '../../assets/Yadro by Andromeda-4.png'
 import { useAuthStore } from '../../entities/auth'
 
@@ -22,7 +21,7 @@ export function LoginPage() {
   const [phoneDigits, setPhoneDigits] = useState('')
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const digits = e.target.value.replace(/\D/g, '')
+    const digits = e.target.value.replace(/\D/g, '').slice(0, 15)
     setPhoneDigits(digits)
   }
 
@@ -32,7 +31,7 @@ export function LoginPage() {
     if (!phoneDigits.trim()) return
 
     try {
-      await sendCode(`+${phoneDigits}`)
+      await sendCode(phoneDigits)
       navigate('/login/code')
     } catch {
       // error is set in store
@@ -76,7 +75,7 @@ export function LoginPage() {
               <Stack spacing={2.5}>
                 <TextField
                   fullWidth
-                  label="Номер телефона *"
+                  label="Номер телефона"
                   type="text"
                   placeholder="7XXXXXXXXXX"
                   value={phoneDigits}
@@ -87,12 +86,7 @@ export function LoginPage() {
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <PhoneIphoneIcon sx={{ color: 'text.disabled' }} />
-                      </InputAdornment>
-                    ),
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <Typography variant="body2" color="text.disabled">+</Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 600, color: 'text.primary' }}>+</Typography>
                       </InputAdornment>
                     ),
                   }}
@@ -103,7 +97,7 @@ export function LoginPage() {
                   type="submit"
                   variant="contained"
                   size="large"
-                  disabled={loading || !phoneDigits.trim()}
+                  disabled={loading || phoneDigits.length < 10}
                 >
                   {loading ? <CircularProgress size={24} color="inherit" /> : 'Получить код'}
                 </Button>

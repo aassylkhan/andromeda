@@ -63,7 +63,7 @@ export function CodePage() {
         <Card variant="outlined" sx={{ borderRadius: 3 }}>
           <CardContent sx={{ p: { xs: 2, md: 3 } }}>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Код отправлен на номер {phoneNumber}
+              Введите код для номера +{phoneNumber}
             </Typography>
 
             {error && (
