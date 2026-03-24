@@ -21,8 +21,7 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 import { useSnackbar } from 'notistack'
 import { createUser, confirmCreateUser } from '../../entities/user/api'
-import type { CreateUserRequest } from '../../entities/user/types'
-import type { DocumentType as DocType } from '../../entities/user/types'
+import type { CreateUserRequest, UserDto, DocumentType as DocType } from '../../entities/user/types'
 import { formatPhoneForUi, normalizePhoneDigits } from '../../shared/utils/phoneUtils'
 
 interface AddUserModalProps {
@@ -70,7 +69,7 @@ export function AddUserModal({ open, onClose, onSuccess }: AddUserModalProps) {
     },
   })
 
-  const docType = watch('documentType') as DocumentType
+  const docType = watch('documentType') as DocType
 
   const handleClose = () => {
     reset()
