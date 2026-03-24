@@ -24,6 +24,8 @@ import MenuIcon from '@mui/icons-material/Menu'
 import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline'
 import BadgeOutlinedIcon from '@mui/icons-material/BadgeOutlined'
 import DevicesOutlinedIcon from '@mui/icons-material/DevicesOutlined'
+import SchoolOutlinedIcon from '@mui/icons-material/SchoolOutlined'
+import FamilyRestroomOutlinedIcon from '@mui/icons-material/FamilyRestroomOutlined'
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded'
 
 import logo from '../../assets/Yadro by Andromeda-4.png'
@@ -69,6 +71,18 @@ export function AppLayout() {
         icon: <BadgeOutlinedIcon sx={{ width: NAV.iconSize, height: NAV.iconSize }} />,
         path: '/employees',
         sectionKey: 'employees' as const,
+      },
+      {
+        label: 'Ученики',
+        icon: <SchoolOutlinedIcon sx={{ width: NAV.iconSize, height: NAV.iconSize }} />,
+        path: '/students',
+        sectionKey: 'students' as const,
+      },
+      {
+        label: 'Родители',
+        icon: <FamilyRestroomOutlinedIcon sx={{ width: NAV.iconSize, height: NAV.iconSize }} />,
+        path: '/parents',
+        sectionKey: 'parents' as const,
       },
       {
         label: 'Сессии входа',

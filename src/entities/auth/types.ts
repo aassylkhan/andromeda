@@ -8,6 +8,8 @@ export interface UserSections {
   employees: boolean
   mySessions: boolean
   admin: boolean
+  students: boolean
+  parents: boolean
 }
 
 export interface User {
