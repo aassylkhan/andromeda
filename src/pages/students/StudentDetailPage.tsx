@@ -6,7 +6,6 @@ import {
   Typography,
   CircularProgress,
   Button,
-  Grid,
   Divider,
 } from '@mui/material'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
@@ -15,16 +14,15 @@ import { getStudentDetail } from '../../entities/student/api'
 import type { StudentDetail } from '../../entities/student/types'
 import { formatPhoneForUi } from '../../shared/utils/phoneUtils'
 
-const Label: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <Typography variant="body2" color="text.secondary" sx={{ mb: 0.25 }}>
-    {children}
-  </Typography>
-)
-
-const Value: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <Typography variant="body1" sx={{ fontWeight: 500, mb: 2 }}>
-    {children}
-  </Typography>
+const Field: React.FC<{ label: string; value: React.ReactNode }> = ({ label, value }) => (
+  <Box sx={{ minWidth: 200, flex: '1 1 280px', mb: 2 }}>
+    <Typography variant="body2" color="text.secondary" sx={{ mb: 0.25 }}>
+      {label}
+    </Typography>
+    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+      {value}
+    </Typography>
+  </Box>
 )
 
 const StudentDetailPage: React.FC = () => {
@@ -95,72 +93,30 @@ const StudentDetailPage: React.FC = () => {
         </Typography>
         <Divider sx={{ mb: 2 }} />
 
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={6} md={4}>
-            <Label>Фамилия</Label>
-            <Value>{student.lastName}</Value>
-          </Grid>
-          <Grid item xs={12} sm={6} md={4}>
-            <Label>Имя</Label>
-            <Value>{student.firstName}</Value>
-          </Grid>
-          <Grid item xs={12} sm={6} md={4}>
-            <Label>Номер телефона</Label>
-            <Value>{student.phoneNumber ? formatPhoneForUi(student.phoneNumber) : '—'}</Value>
-          </Grid>
-          <Grid item xs={12} sm={6} md={4}>
-            <Label>Класс</Label>
-            <Value>{student.gradeName ?? '—'}</Value>
-          </Grid>
-          <Grid item xs={12} sm={6} md={4}>
-            <Label>Продукт</Label>
-            <Value>{student.productName ?? '—'}</Value>
-          </Grid>
-          <Grid item xs={12} sm={6} md={4}>
-            <Label>Язык обучения</Label>
-            <Value>{student.learningLanguageName ?? '—'}</Value>
-          </Grid>
-          <Grid item xs={12} sm={6} md={4}>
-            <Label>Офис</Label>
-            <Value>{student.officeName ?? '—'}</Value>
-          </Grid>
-          <Grid item xs={12} sm={6} md={4}>
-            <Label>Время обучения</Label>
-            <Value>{student.learningHourOptionName ?? '—'}</Value>
-          </Grid>
-          <Grid item xs={12} sm={6} md={4}>
-            <Label>Куратор</Label>
-            <Value>{curatorName}</Value>
-          </Grid>
-        </Grid>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+          <Field label="Фамилия" value={student.lastName} />
+          <Field label="Имя" value={student.firstName} />
+          <Field label="Номер телефона" value={student.phoneNumber ? formatPhoneForUi(student.phoneNumber) : '—'} />
+          <Field label="Класс" value={student.gradeName ?? '—'} />
+          <Field label="Продукт" value={student.productName ?? '—'} />
+          <Field label="Язык обучения" value={student.learningLanguageName ?? '—'} />
+          <Field label="Офис" value={student.officeName ?? '—'} />
+          <Field label="Время обучения" value={student.learningHourOptionName ?? '—'} />
+          <Field label="Куратор" value={curatorName} />
+        </Box>
 
         <Divider sx={{ my: 2 }} />
 
         <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
           Часы и заморозки
         </Typography>
-        <Grid container spacing={2}>
-          <Grid item xs={6} sm={3}>
-            <Label>Гр. офф. часов</Label>
-            <Value>{student.amountOfOfflineGroupHours}</Value>
-          </Grid>
-          <Grid item xs={6} sm={3}>
-            <Label>Инд. офф. часов</Label>
-            <Value>{student.amountOfOfflineIndividualHours}</Value>
-          </Grid>
-          <Grid item xs={6} sm={3}>
-            <Label>Инд. онл. часов</Label>
-            <Value>{student.amountOfOnlineIndividualHours}</Value>
-          </Grid>
-          <Grid item xs={6} sm={3}>
-            <Label>Заморозки</Label>
-            <Value>{student.freezings}</Value>
-          </Grid>
-          <Grid item xs={12} sm={6} md={4}>
-            <Label>Дата начала обучения</Label>
-            <Value>{student.offgrStartDate ?? '—'}</Value>
-          </Grid>
-        </Grid>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+          <Field label="Гр. офф. часов" value={student.amountOfOfflineGroupHours} />
+          <Field label="Инд. офф. часов" value={student.amountOfOfflineIndividualHours} />
+          <Field label="Инд. онл. часов" value={student.amountOfOnlineIndividualHours} />
+          <Field label="Заморозки" value={student.freezings} />
+          <Field label="Дата начала обучения" value={student.offgrStartDate ?? '—'} />
+        </Box>
       </Paper>
     </Box>
   )
