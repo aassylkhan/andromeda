@@ -25,7 +25,7 @@ import { useSnackbar } from 'notistack'
 import { useDebounce } from '../../shared/hooks/useDebounce'
 import { getUsers } from '../../entities/user/api'
 import type { UserDto } from '../../entities/user/types'
-import { formatDocumentForDisplay } from '../../shared/utils/documentUtils'
+import { documentTypeLabel } from '../../shared/utils/documentUtils'
 import { formatPhoneForUi } from '../../shared/utils/phoneUtils'
 import { AddUserModal } from '../../features/user-dialogs/AddUserModal'
 import { EditDocumentModal } from '../../features/user-dialogs/EditDocumentModal'
@@ -171,7 +171,11 @@ const UsersPage: React.FC = () => {
                   <TableRow key={u.id} hover sx={{ '& td': { borderBottom: '1px solid rgba(145,158,171,0.12)', px: 2 } }}>
                     <TableCell>{u.id}</TableCell>
                     <TableCell>{u.lastName} {u.firstName}</TableCell>
-                    <TableCell>{formatDocumentForDisplay(u.pnOrIin)}</TableCell>
+                    <TableCell>
+                      {u.documentType && u.documentNumber
+                        ? `${documentTypeLabel(u.documentType as 'ID_CARD' | 'PASSPORT')}: ${u.documentNumber}`
+                        : '—'}
+                    </TableCell>
                     <TableCell>{u.phoneNumber ? formatPhoneForUi(u.phoneNumber) : '—'}</TableCell>
                     <TableCell align="right">
                       <IconButton size="small" onClick={(e) => handleContextMenu(e, u)}>

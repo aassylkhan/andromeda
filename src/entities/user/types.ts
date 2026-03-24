@@ -2,7 +2,8 @@ export interface UserDto {
   id: number
   firstName: string
   lastName: string
-  pnOrIin: string | null
+  documentType: string | null
+  documentNumber: string | null
   phoneNumber: string | null
   createdAt?: string
 }
@@ -12,26 +13,29 @@ export type DocumentType = 'ID_CARD' | 'PASSPORT'
 export interface CreateUserRequest {
   lastName: string
   firstName: string
-  pnOrIin: string
+  documentType: DocumentType
+  documentNumber: string
   phoneNumber: string
 }
 
 export interface CreateUserResult {
-  type: 'CREATED' | 'DOCUMENT_CONFLICT' | 'PHONE_CONFLICT'
-  user?: UserDto
-  existingUser?: UserDto
+  type: 'CREATED' | 'DOCUMENT_ALREADY_EXISTS' | 'PHONE_TAKEN'
+  newUser?: UserDto | null
+  existingUser?: UserDto | null
   message?: string
 }
 
 export interface ConfirmCreateUserRequest {
   lastName: string
   firstName: string
-  pnOrIin: string
+  documentType: DocumentType
+  documentNumber: string
   phoneNumber: string
 }
 
 export interface UpdateDocumentRequest {
-  pnOrIin: string
+  documentType: DocumentType
+  documentNumber: string
 }
 
 export interface PageResponse<T> {

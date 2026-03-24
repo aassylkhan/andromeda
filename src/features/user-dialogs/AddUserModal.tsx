@@ -21,11 +21,9 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 import { useSnackbar } from 'notistack'
 import { createUser, confirmCreateUser } from '../../entities/user/api'
-import type { CreateUserRequest, UserDto } from '../../entities/user/types'
-import { buildPnOrIin } from '../../shared/utils/documentUtils'
-import { formatPhoneForUi } from '../../shared/utils/phoneUtils'
-import type { DocumentType } from '../../shared/utils/documentUtils'
-import { normalizePhoneDigits } from '../../shared/utils/phoneUtils'
+import type { CreateUserRequest } from '../../entities/user/types'
+import type { DocumentType as DocType } from '../../entities/user/types'
+import { formatPhoneForUi, normalizePhoneDigits } from '../../shared/utils/phoneUtils'
 
 interface AddUserModalProps {
   open: boolean
@@ -113,7 +111,8 @@ export function AddUserModal({ open, onClose, onSuccess }: AddUserModalProps) {
       const payload: CreateUserRequest = {
         lastName: data.lastName,
         firstName: data.firstName,
-        pnOrIin: buildPnOrIin(data.documentType as DocumentType, data.documentNumber),
+        documentType: data.documentType as DocType,
+        documentNumber: data.documentNumber,
         phoneNumber: `+${phoneDigits}`,
       }
 
@@ -123,9 +122,9 @@ export function AddUserModal({ open, onClose, onSuccess }: AddUserModalProps) {
         enqueueSnackbar('Пользователь добавлен', { variant: 'success' })
         handleClose()
         onSuccess()
-      } else if (result.type === 'DOCUMENT_CONFLICT') {
+      } else if (result.type === 'DOCUMENT_ALREADY_EXISTS') {
         setConflict({ type: 'DOCUMENT_CONFLICT', message: result.message || 'Пользователь с таким номером документа уже существует' })
-      } else if (result.type === 'PHONE_CONFLICT' && result.existingUser) {
+      } else if (result.type === 'PHONE_TAKEN' && result.existingUser) {
         setConflict({ type: 'PHONE_CONFLICT', existingUser: result.existingUser, newUserData: data })
       }
     } catch (error) {
@@ -145,7 +144,8 @@ export function AddUserModal({ open, onClose, onSuccess }: AddUserModalProps) {
       await confirmCreateUser({
         lastName: data.lastName,
         firstName: data.firstName,
-        pnOrIin: buildPnOrIin(data.documentType as DocumentType, data.documentNumber),
+        documentType: data.documentType as DocType,
+        documentNumber: data.documentNumber,
         phoneNumber: `+${phoneDigits}`,
       })
       enqueueSnackbar('Пользователь добавлен', { variant: 'success' })
@@ -192,7 +192,7 @@ export function AddUserModal({ open, onClose, onSuccess }: AddUserModalProps) {
               </Typography>
               <Typography variant="body2">ID: {existing.id}</Typography>
               <Typography variant="body2">ФИО: {existing.lastName} {existing.firstName}</Typography>
-              <Typography variant="body2">Документ: {existing.pnOrIin || '—'}</Typography>
+              <Typography variant="body2">Документ: {existing.documentType && existing.documentNumber ? `${existing.documentType}: ${existing.documentNumber}` : '—'}</Typography>
               <Typography variant="body2">Телефон: {existing.phoneNumber ? formatPhoneForUi(existing.phoneNumber) : '—'}</Typography>
             </Box>
 
@@ -202,7 +202,7 @@ export function AddUserModal({ open, onClose, onSuccess }: AddUserModalProps) {
               </Typography>
               <Typography variant="body2">ФИО: {nd.lastName} {nd.firstName}</Typography>
               <Typography variant="body2">
-                Документ: {buildPnOrIin(nd.documentType as DocumentType, nd.documentNumber)}
+                Документ: {nd.documentType === 'ID_CARD' ? 'УЛ РК' : 'Паспорт'}: {nd.documentNumber}
               </Typography>
               <Typography variant="body2">Телефон: +{normalizePhoneDigits(nd.phoneNumber)}</Typography>
             </Box>

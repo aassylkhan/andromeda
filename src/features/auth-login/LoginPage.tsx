@@ -77,7 +77,7 @@ export function LoginPage() {
                   fullWidth
                   label="Номер телефона"
                   type="text"
-                  placeholder="7XXXXXXXXXX"
+                  placeholder="___________"
                   value={phoneDigits}
                   onChange={handlePhoneChange}
                   disabled={loading}

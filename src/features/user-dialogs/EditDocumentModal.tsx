@@ -18,7 +18,6 @@ import {
 import { useSnackbar } from 'notistack'
 import { updateUserDocument } from '../../entities/user/api'
 import type { UserDto } from '../../entities/user/types'
-import { parseDocument, buildPnOrIin, isIinDocument } from '../../shared/utils/documentUtils'
 import type { DocumentType } from '../../shared/utils/documentUtils'
 
 interface EditDocumentModalProps {
@@ -31,26 +30,23 @@ interface EditDocumentModalProps {
 export function EditDocumentModal({ open, onClose, onSuccess, user }: EditDocumentModalProps) {
   const { enqueueSnackbar } = useSnackbar()
   const [loading, setLoading] = useState(false)
-  const [iinError, setIinError] = useState(false)
+  const [inputError, setInputError] = useState(false)
 
-  const parsed = user ? parseDocument(user.pnOrIin) : null
-  const [docType, setDocType] = useState<DocumentType>(parsed?.type ?? 'ID_CARD')
-  const [docNumber, setDocNumber] = useState(parsed?.number ?? '')
+  const [docType, setDocType] = useState<DocumentType>('ID_CARD')
+  const [docNumber, setDocNumber] = useState('')
 
   useEffect(() => {
     if (user && open) {
-      const p = parseDocument(user.pnOrIin)
-      if (p) {
-        setDocType(p.type)
-        setDocNumber(p.number)
-      }
-      setIinError(false)
+      const dt = (user.documentType as DocumentType) ?? 'ID_CARD'
+      setDocType(dt)
+      setDocNumber(user.documentNumber ?? '')
+      setInputError(false)
     }
   }, [user, open])
 
   if (!user) return null
 
-  if (open && isIinDocument(user.pnOrIin)) {
+  if (open && user.documentType === 'ID_CARD' && user.documentNumber) {
     return (
       <Dialog open onClose={onClose} maxWidth="xs" fullWidth>
         <DialogTitle>Ошибка</DialogTitle>
@@ -70,23 +66,26 @@ export function EditDocumentModal({ open, onClose, onSuccess, user }: EditDocume
 
   const handleSave = async () => {
     if (docType === 'ID_CARD' && !/^\d{12}$/.test(docNumber)) {
-      setIinError(true)
+      setInputError(true)
       return
     }
     if (docType === 'PASSPORT' && (!docNumber.trim() || /\s/.test(docNumber))) {
-      setIinError(true)
+      setInputError(true)
       return
     }
-    setIinError(false)
+    setInputError(false)
 
     setLoading(true)
     try {
-      await updateUserDocument(user.id, { pnOrIin: buildPnOrIin(docType, docNumber) })
+      await updateUserDocument(user.id, { documentType: docType, documentNumber: docNumber })
       enqueueSnackbar('Документ обновлен', { variant: 'success' })
       onClose()
       onSuccess()
-    } catch (error) {
-      enqueueSnackbar(error instanceof Error ? error.message : 'Ошибка', { variant: 'error' })
+    } catch (error: unknown) {
+      const msg =
+        (error as { response?: { data?: { message?: string } } })?.response?.data?.message ??
+        (error instanceof Error ? error.message : 'Ошибка')
+      enqueueSnackbar(msg, { variant: 'error' })
     } finally {
       setLoading(false)
     }
@@ -104,7 +103,7 @@ export function EditDocumentModal({ open, onClose, onSuccess, user }: EditDocume
               onChange={(e) => {
                 setDocType(e.target.value as DocumentType)
                 setDocNumber('')
-                setIinError(false)
+                setInputError(false)
               }}
               row
               sx={{ mt: 1 }}
@@ -125,11 +124,11 @@ export function EditDocumentModal({ open, onClose, onSuccess, user }: EditDocume
                 val = val.replace(/\s/g, '')
               }
               setDocNumber(val)
-              setIinError(false)
+              setInputError(false)
             }}
-            error={iinError}
+            error={inputError}
             helperText={
-              iinError
+              inputError
                 ? docType === 'ID_CARD'
                   ? 'ИИН должен содержать ровно 12 цифр'
                   : 'Номер паспорта не должен содержать пробелов'
