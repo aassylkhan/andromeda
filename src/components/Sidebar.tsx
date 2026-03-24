@@ -82,7 +82,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         }}
       >
         <img
-          src="/Yadro by Andromeda-4.png"
+          src="/YadroSide.png"
           alt="Yadro"
           style={{ width: '100%', height: '100%', objectFit: 'cover' }}
         />

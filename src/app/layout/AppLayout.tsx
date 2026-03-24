@@ -28,7 +28,7 @@ import SchoolOutlinedIcon from '@mui/icons-material/SchoolOutlined'
 import FamilyRestroomOutlinedIcon from '@mui/icons-material/FamilyRestroomOutlined'
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded'
 
-import logo from '../../assets/Yadro by Andromeda-4.png'
+import logo from '../../assets/YadroSide.png'
 import { useAuthStore } from '../../entities/auth'
 import { formatPhoneForUi } from '../../shared/utils/phoneUtils'
 

@@ -12,7 +12,7 @@ import {
   CircularProgress,
   InputAdornment,
 } from '@mui/material'
-import logo from '../../assets/Yadro by Andromeda-4.png'
+import logo from '../../assets/YadroSide.png'
 import { useAuthStore } from '../../entities/auth'
 
 export function LoginPage() {
