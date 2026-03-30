@@ -1,5 +1,5 @@
 import { http } from '../../shared/api'
-import type { LookupDto } from './types'
+import type { LookupDto, ProductDetailDto } from './types'
 
 export async function getGrades(): Promise<LookupDto[]> {
   const { data } = await http.get<LookupDto[]>('/api/v1/lookups/grades')
@@ -28,5 +28,15 @@ export async function getLearningHourOptions(): Promise<LookupDto[]> {
 
 export async function getCurators(): Promise<LookupDto[]> {
   const { data } = await http.get<LookupDto[]>('/api/v1/lookups/curators')
+  return data
+}
+
+export async function getExperts(): Promise<LookupDto[]> {
+  const { data } = await http.get<LookupDto[]>('/api/v1/lookups/experts')
+  return data
+}
+
+export async function getProductsDetail(): Promise<ProductDetailDto[]> {
+  const { data } = await http.get<ProductDetailDto[]>('/api/v1/lookups/products-detail')
   return data
 }

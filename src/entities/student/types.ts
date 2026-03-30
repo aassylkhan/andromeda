@@ -31,6 +31,7 @@ export interface StudentDetail {
   firstName: string
   phoneNumber: string | null
   pnOrIin: string | null
+  balance: number
   gradeId: number | null
   gradeName: string | null
   productId: number | null
@@ -49,6 +50,15 @@ export interface StudentDetail {
   amountOfOnlineIndividualHours: number
   freezings: number
   offgrStartDate: string | null
+}
+
+export interface StudentParentLink {
+  linkId: number
+  parentId: number
+  userId: number
+  fullName: string
+  phoneNumber: string | null
+  documentNumber: string | null
 }
 
 export interface StudentLookupItem {

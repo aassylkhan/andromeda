@@ -1,6 +1,7 @@
 import { Navigate, createBrowserRouter } from 'react-router-dom'
 import { LoginPage, CodePage } from '../features/auth-login'
 import { ProtectedRoute } from './routes/ProtectedRoute'
+import { MaintenanceGuard } from './routes/MaintenanceGuard'
 import { AppLayout } from './layout/AppLayout'
 import UsersPage from '../pages/users/UsersPage'
 import EmployeesPage from '../pages/employees/EmployeesPage'
@@ -8,8 +9,10 @@ import { SessionsPage } from '../pages/SessionsPage'
 import StudentsPage from '../pages/students/StudentsPage'
 import StudentDetailPage from '../pages/students/StudentDetailPage'
 import ParentsPage from '../pages/parents/ParentsPage'
+import PaymentRequestsPage from '../pages/payment-requests/PaymentRequestsPage'
 
 const STUDENTS_PARENTS_ROLES = ['director', 'head', 'curator', 'expert']
+const PAYMENT_REQUESTS_ROLES = ['director', 'head', 'accountant', 'expert']
 
 export const router = createBrowserRouter([
   {
@@ -23,9 +26,11 @@ export const router = createBrowserRouter([
   {
     path: '/',
     element: (
-      <ProtectedRoute>
-        <AppLayout />
-      </ProtectedRoute>
+      <MaintenanceGuard>
+        <ProtectedRoute>
+          <AppLayout />
+        </ProtectedRoute>
+      </MaintenanceGuard>
     ),
     children: [
       {
@@ -69,6 +74,14 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute requiredRoles={STUDENTS_PARENTS_ROLES} requiredSections={['parents']}>
             <ParentsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'payment-requests',
+        element: (
+          <ProtectedRoute requiredRoles={PAYMENT_REQUESTS_ROLES} requiredSections={['paymentRequests']}>
+            <PaymentRequestsPage />
           </ProtectedRoute>
         ),
       },

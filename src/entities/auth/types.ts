@@ -10,6 +10,7 @@ export interface UserSections {
   admin: boolean
   students: boolean
   parents: boolean
+  paymentRequests: boolean
 }
 
 export interface User {

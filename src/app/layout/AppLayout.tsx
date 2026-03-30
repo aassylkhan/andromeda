@@ -26,6 +26,7 @@ import BadgeOutlinedIcon from '@mui/icons-material/BadgeOutlined'
 import DevicesOutlinedIcon from '@mui/icons-material/DevicesOutlined'
 import SchoolOutlinedIcon from '@mui/icons-material/SchoolOutlined'
 import FamilyRestroomOutlinedIcon from '@mui/icons-material/FamilyRestroomOutlined'
+import PaymentOutlinedIcon from '@mui/icons-material/PaymentOutlined'
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded'
 
 const logo = '/YadroSide.png'
@@ -83,6 +84,12 @@ export function AppLayout() {
         icon: <FamilyRestroomOutlinedIcon sx={{ width: NAV.iconSize, height: NAV.iconSize }} />,
         path: '/parents',
         sectionKey: 'parents' as const,
+      },
+      {
+        label: 'Новые оплаты',
+        icon: <PaymentOutlinedIcon sx={{ width: NAV.iconSize, height: NAV.iconSize }} />,
+        path: '/payment-requests',
+        sectionKey: 'paymentRequests' as const,
       },
       {
         label: 'Сессии входа',
@@ -155,7 +162,7 @@ export function AppLayout() {
         <Box
           component="img"
           src={logo}
-          alt="Ядро by Андромеда"
+          alt="Yadro by Andromeda"
           onClick={() => {
             const first = visibleMenuItems[0]
             navigate(first?.path ?? '/')
@@ -266,7 +273,7 @@ export function AppLayout() {
             <IconButton onClick={() => setMobileOpen((v) => !v)} edge="start">
               <MenuIcon />
             </IconButton>
-            <Typography sx={{ fontWeight: 700, fontSize: 16 }}>Ядро</Typography>
+            <Typography sx={{ fontWeight: 700, fontSize: 16 }}>Yadro</Typography>
           </Toolbar>
         </AppBar>
       )}

@@ -52,7 +52,7 @@ export function LoginPage() {
           <Box
             component="img"
             src={logo}
-            alt="Ядро by Андромеда"
+            alt="Yadro by Andromeda"
             sx={{ height: 48, width: 'auto', mb: 2, display: 'inline-block' }}
           />
           <Typography variant="h4" sx={{ mb: 1 }}>

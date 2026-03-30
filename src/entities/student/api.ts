@@ -1,5 +1,5 @@
 import { http } from '../../shared/api'
-import type { StudentListItem, StudentDetail, StudentLookupItem, PageResponse } from './types'
+import type { StudentListItem, StudentDetail, StudentLookupItem, StudentParentLink, PageResponse } from './types'
 
 export interface GetStudentsParams {
   page?: number
@@ -68,4 +68,39 @@ export async function searchStudentsLookup(q?: string): Promise<StudentLookupIte
     params: q ? { q } : {},
   })
   return data
+}
+
+export async function getStudentParents(studentId: number): Promise<StudentParentLink[]> {
+  const { data } = await http.get<StudentParentLink[]>(`/api/v1/students/${studentId}/parents`)
+  return data
+}
+
+export async function addParentToStudent(studentId: number, parentId: number): Promise<StudentParentLink> {
+  const { data } = await http.post<StudentParentLink>(`/api/v1/students/${studentId}/parents`, { parentId })
+  return data
+}
+
+export async function removeParentFromStudent(studentId: number, linkId: number): Promise<void> {
+  await http.delete(`/api/v1/students/${studentId}/parents/${linkId}`)
+}
+
+export interface CreatePaymentRequestData {
+  expertId: number
+  parentId: number
+  gradeId: number
+  productId: number
+  learningLanguageId: number
+  officeId: number
+  learningHourOptionId: number
+  comments?: string
+  offgrStartDate: string
+  freezings: number
+  classdays: number
+  membershipFee: number
+  courseFee: number
+}
+
+export async function createPaymentRequest(studentId: number, data: CreatePaymentRequestData) {
+  const { data: result } = await http.post(`/api/v1/students/${studentId}/payment-requests`, data)
+  return result
 }
