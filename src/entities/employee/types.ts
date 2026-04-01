@@ -62,3 +62,19 @@ export const ASSIGNABLE_ROLES: { value: string; label: string }[] = [
   { value: 'TEACHER', label: 'Преподаватель' },
   { value: 'EXPERT', label: 'Эксперт' },
 ]
+
+export interface TeacherRateItem {
+  id: number
+  createdAt: string
+  createdByUserId: number
+  createdByFullName: string
+  subjectId: number
+  subjectName: string
+  rate: number
+  activationDate: string
+}
+
+export interface SubjectDto {
+  id: number
+  name: string
+}

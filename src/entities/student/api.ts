@@ -104,3 +104,30 @@ export async function createPaymentRequest(studentId: number, data: CreatePaymen
   const { data: result } = await http.post(`/api/v1/students/${studentId}/payment-requests`, data)
   return result
 }
+
+// ==================== Curator Assignment ====================
+
+export interface StudentWithoutCurator {
+  studentId: number
+  userId: number
+  lastName: string
+  firstName: string
+  gradeName: string | null
+  productName: string | null
+  learningLanguageName: string | null
+  officeName: string | null
+  learningHourOptionName: string | null
+  amountOfOfflineGroupHours: number
+  amountOfOfflineIndividualHours: number
+  amountOfOnlineIndividualHours: number
+  offgrStartDate: string | null
+}
+
+export async function getStudentsWithoutCurator(): Promise<StudentWithoutCurator[]> {
+  const { data } = await http.get<StudentWithoutCurator[]>('/api/v1/students/without-curator')
+  return data
+}
+
+export async function assignCurator(studentId: number, curatorUserId: number): Promise<void> {
+  await http.post(`/api/v1/students/${studentId}/assign-curator`, { curatorUserId })
+}

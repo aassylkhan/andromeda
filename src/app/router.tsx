@@ -8,6 +8,7 @@ import EmployeesPage from '../pages/employees/EmployeesPage'
 import { SessionsPage } from '../pages/SessionsPage'
 import StudentsPage from '../pages/students/StudentsPage'
 import StudentDetailPage from '../pages/students/StudentDetailPage'
+import CuratorAssignmentPage from '../pages/students/CuratorAssignmentPage'
 import ParentsPage from '../pages/parents/ParentsPage'
 import PaymentRequestsPage from '../pages/payment-requests/PaymentRequestsPage'
 
@@ -66,6 +67,14 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute requiredRoles={STUDENTS_PARENTS_ROLES} requiredSections={['students']}>
             <StudentDetailPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'students/without-curator',
+        element: (
+          <ProtectedRoute requiredRoles={['director', 'head']}>
+            <CuratorAssignmentPage />
           </ProtectedRoute>
         ),
       },

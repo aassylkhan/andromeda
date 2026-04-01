@@ -24,7 +24,10 @@ import {
 import AddIcon from '@mui/icons-material/Add'
 import FilterListIcon from '@mui/icons-material/FilterList'
 import SearchIcon from '@mui/icons-material/Search'
+import PersonOffOutlinedIcon from '@mui/icons-material/PersonOffOutlined'
 import { useSnackbar } from 'notistack'
+import { useAuthStore } from '../../entities/auth'
+import { hasAnyRole } from '../../shared/utils/roleUtils'
 import { useDebounce } from '../../shared/hooks/useDebounce'
 import { formatPhoneForUi } from '../../shared/utils/phoneUtils'
 import { getStudents, addStudent } from '../../entities/student/api'
@@ -47,6 +50,8 @@ const TH_SX = {
 const StudentsPage: React.FC = () => {
   const { enqueueSnackbar } = useSnackbar()
   const navigate = useNavigate()
+  const { user } = useAuthStore()
+  const [accessErrorOpen, setAccessErrorOpen] = useState(false)
 
   const [students, setStudents] = useState<StudentListItem[]>([])
   const [loading, setLoading] = useState(false)
@@ -137,6 +142,20 @@ const StudentsPage: React.FC = () => {
             sx={{ height: 48, borderRadius: 2, px: 3, bgcolor: '#fff' }}
           >
             Фильтр
+          </Button>
+          <Button
+            variant="outlined"
+            startIcon={<PersonOffOutlinedIcon />}
+            onClick={() => {
+              if (user && hasAnyRole(user, ['director', 'head'])) {
+                navigate('/students/without-curator')
+              } else {
+                setAccessErrorOpen(true)
+              }
+            }}
+            sx={{ height: 48, borderRadius: 2, px: 3, bgcolor: '#fff', whiteSpace: 'nowrap' }}
+          >
+            Без куратора
           </Button>
           <Button
             variant="contained"
@@ -249,6 +268,16 @@ const StudentsPage: React.FC = () => {
           <Button variant="contained" onClick={() => setErrorModal(null)}>
             ОК
           </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={accessErrorOpen} onClose={() => setAccessErrorOpen(false)} maxWidth="xs" fullWidth>
+        <DialogTitle>Ошибка</DialogTitle>
+        <DialogContent>
+          <Typography variant="body1" sx={{ mt: 1 }}>Вы не имеете доступ к этому разделу</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button variant="contained" onClick={() => setAccessErrorOpen(false)}>ОК</Button>
         </DialogActions>
       </Dialog>
     </Box>

@@ -113,3 +113,25 @@ export class EmployeeAlreadyExistsError extends Error {
     this.name = 'EmployeeAlreadyExistsError'
   }
 }
+
+// ==================== Teacher Rates ====================
+
+import type { TeacherRateItem, SubjectDto } from './types'
+
+export async function getTeacherRates(teacherUserId: number): Promise<TeacherRateItem[]> {
+  const { data } = await http.get<TeacherRateItem[]>(`/api/v1/employees/${teacherUserId}/rates`)
+  return data
+}
+
+export async function createTeacherRate(
+  teacherUserId: number,
+  payload: { subjectId: number; rate: number; activationDate: string }
+): Promise<TeacherRateItem> {
+  const { data } = await http.post<TeacherRateItem>(`/api/v1/employees/${teacherUserId}/rates`, payload)
+  return data
+}
+
+export async function getSubjects(teacherUserId: number): Promise<SubjectDto[]> {
+  const { data } = await http.get<SubjectDto[]>(`/api/v1/employees/${teacherUserId}/rates/subjects`)
+  return data
+}

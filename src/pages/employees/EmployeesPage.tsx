@@ -43,6 +43,7 @@ import { ROLE_LABELS, STATUS_LABELS } from '../../entities/employee/types'
 import { AddEmployeeModal } from '../../features/employee-dialogs/AddEmployeeModal'
 import { EditEmployeeModal } from '../../features/employee-dialogs/EditEmployeeModal'
 import { FilterModal } from '../../features/employee-dialogs/FilterModal'
+import { TeacherRatesModal } from '../../features/employee-dialogs/TeacherRatesModal'
 
 const EmployeesPage: React.FC = () => {
   const { enqueueSnackbar } = useSnackbar()
@@ -69,6 +70,8 @@ const EmployeesPage: React.FC = () => {
   const [contextEmployee, setContextEmployee] = useState<Employee | null>(null)
 
   const [errorModal, setErrorModal] = useState<string | null>(null)
+  const [openRatesModal, setOpenRatesModal] = useState(false)
+  const [ratesEmployee, setRatesEmployee] = useState<Employee | null>(null)
 
   const isDirector = user && hasAnyRole(user, ['director'])
 
@@ -310,6 +313,12 @@ const EmployeesPage: React.FC = () => {
         </MenuItem>
         <MenuItem onClick={handleEdit}>Редактировать</MenuItem>
         <MenuItem onClick={handleAssignHead}>Назначить руководителем</MenuItem>
+        <MenuItem onClick={() => {
+          if (contextEmployee) { setRatesEmployee(contextEmployee); setOpenRatesModal(true) }
+          handleCloseContext()
+        }}>
+          Редактировать ставки
+        </MenuItem>
       </Menu>
 
       <AddEmployeeModal
@@ -339,6 +348,12 @@ const EmployeesPage: React.FC = () => {
         }}
         onSuccess={fetchEmployees}
         employee={editingEmployee}
+      />
+
+      <TeacherRatesModal
+        open={openRatesModal}
+        onClose={() => { setOpenRatesModal(false); setRatesEmployee(null) }}
+        employee={ratesEmployee}
       />
 
       <Dialog open={!!errorModal} onClose={() => setErrorModal(null)} maxWidth="xs" fullWidth>
