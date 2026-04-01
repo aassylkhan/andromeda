@@ -220,7 +220,7 @@ const StudentsPage: React.FC = () => {
                     <TableCell align="center">{s.amountOfOfflineIndividualHours}</TableCell>
                     <TableCell align="center">{s.amountOfOnlineIndividualHours}</TableCell>
                     <TableCell align="center">{s.freezings}</TableCell>
-                    <TableCell>{s.offgrStartDate ?? '—'}</TableCell>
+                    <TableCell>{s.offerStartDate ?? '—'}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

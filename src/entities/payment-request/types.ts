@@ -13,7 +13,7 @@ export interface PaymentRequestItem {
   officeName: string
   learningHourOptionName: string
   comments: string | null
-  offgrStartDate: string
+  offerStartDate: string
   freezings: number
   months: number
   classdays: number

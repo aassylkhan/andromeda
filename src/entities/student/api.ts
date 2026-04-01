@@ -19,8 +19,8 @@ export interface GetStudentsParams {
   onlineIndividualHoursMax?: number
   freezingsMin?: number
   freezingsMax?: number
-  offgrStartDateFrom?: string
-  offgrStartDateTo?: string
+  offerStartDateFrom?: string
+  offerStartDateTo?: string
 }
 
 export async function getStudents(
@@ -45,8 +45,8 @@ export async function getStudents(
       ...(params?.onlineIndividualHoursMax != null && { onlineIndividualHoursMax: params.onlineIndividualHoursMax }),
       ...(params?.freezingsMin != null && { freezingsMin: params.freezingsMin }),
       ...(params?.freezingsMax != null && { freezingsMax: params.freezingsMax }),
-      ...(params?.offgrStartDateFrom && { offgrStartDateFrom: params.offgrStartDateFrom }),
-      ...(params?.offgrStartDateTo && { offgrStartDateTo: params.offgrStartDateTo }),
+      ...(params?.offerStartDateFrom && { offerStartDateFrom: params.offerStartDateFrom }),
+      ...(params?.offerStartDateTo && { offerStartDateTo: params.offerStartDateTo }),
     },
     paramsSerializer: { indexes: null },
   })
@@ -93,7 +93,7 @@ export interface CreatePaymentRequestData {
   officeId: number
   learningHourOptionId: number
   comments?: string
-  offgrStartDate: string
+  offerStartDate: string
   freezings: number
   classdays: number
   membershipFee: number
@@ -120,7 +120,7 @@ export interface StudentWithoutCurator {
   amountOfOfflineGroupHours: number
   amountOfOfflineIndividualHours: number
   amountOfOnlineIndividualHours: number
-  offgrStartDate: string | null
+  offerStartDate: string | null
 }
 
 export async function getStudentsWithoutCurator(): Promise<StudentWithoutCurator[]> {

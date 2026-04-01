@@ -135,7 +135,7 @@ const StudentDetailPage: React.FC = () => {
               <Field label="Язык обучения" value={student.learningLanguageName ?? '—'} />
               <Field label="Филиал" value={student.officeName ?? '—'} />
               <Field label="Время обучения" value={student.learningHourOptionName ?? '—'} />
-              <Field label="Дата старта обучения" value={student.offgrStartDate ?? '—'} />
+              <Field label="Дата старта обучения" value={student.offerStartDate ?? '—'} />
             </Box>
           </Box>
         </Box>

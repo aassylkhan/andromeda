@@ -21,7 +21,7 @@ export interface StudentListItem {
   amountOfOfflineIndividualHours: number
   amountOfOnlineIndividualHours: number
   freezings: number
-  offgrStartDate: string | null
+  offerStartDate: string | null
 }
 
 export interface StudentDetail {
@@ -49,7 +49,7 @@ export interface StudentDetail {
   amountOfOfflineIndividualHours: number
   amountOfOnlineIndividualHours: number
   freezings: number
-  offgrStartDate: string | null
+  offerStartDate: string | null
 }
 
 export interface StudentParentLink {

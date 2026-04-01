@@ -45,7 +45,7 @@ export const EnrollStudentDialog: React.FC<EnrollStudentDialogProps> = ({ open, 
   const [officeId, setOfficeId] = useState<number | ''>('')
   const [learningHourOptionId, setLearningHourOptionId] = useState<number | ''>('')
   const [comments, setComments] = useState('')
-  const [offgrStartDate, setOffgrStartDate] = useState('')
+  const [offerStartDate, setOffgrStartDate] = useState('')
   const [freezings, setFreezings] = useState(0)
   const [classdays, setClassdays] = useState(0)
   const [membershipFee, setMembershipFee] = useState(0)
@@ -122,7 +122,7 @@ export const EnrollStudentDialog: React.FC<EnrollStudentDialogProps> = ({ open, 
 
   const handleSubmit = async () => {
     setConfirmOpen(false)
-    if (!expertId || !parentId || !gradeId || !productId || !learningLanguageId || !officeId || !learningHourOptionId || !offgrStartDate) {
+    if (!expertId || !parentId || !gradeId || !productId || !learningLanguageId || !officeId || !learningHourOptionId || !offerStartDate) {
       enqueueSnackbar('Заполните все обязательные поля', { variant: 'warning' })
       return
     }
@@ -137,7 +137,7 @@ export const EnrollStudentDialog: React.FC<EnrollStudentDialogProps> = ({ open, 
         officeId: officeId as number,
         learningHourOptionId: learningHourOptionId as number,
         comments: comments || undefined,
-        offgrStartDate,
+        offerStartDate,
         freezings,
         classdays,
         membershipFee,
@@ -197,7 +197,7 @@ export const EnrollStudentDialog: React.FC<EnrollStudentDialogProps> = ({ open, 
               />
 
               <TextField
-                label="Дата начала обучения" type="date" value={offgrStartDate}
+                label="Дата начала обучения" type="date" value={offerStartDate}
                 onChange={(e) => setOffgrStartDate(e.target.value)}
                 fullWidth size="small"
                 slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: minDate } }}

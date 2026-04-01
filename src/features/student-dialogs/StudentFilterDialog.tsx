@@ -41,8 +41,8 @@ export interface StudentFilters {
   onlineIndividualHoursMax?: number
   freezingsMin?: number
   freezingsMax?: number
-  offgrStartDateFrom?: string
-  offgrStartDateTo?: string
+  offerStartDateFrom?: string
+  offerStartDateTo?: string
 }
 
 export const emptyFilters: StudentFilters = {
@@ -190,8 +190,8 @@ export function StudentFilterDialog({ open, onClose, onApply, initial }: Props) 
                 type="date"
                 size="small"
                 fullWidth
-                value={f.offgrStartDateFrom ?? ''}
-                onChange={(e) => setF((prev) => ({ ...prev, offgrStartDateFrom: e.target.value || undefined }))}
+                value={f.offerStartDateFrom ?? ''}
+                onChange={(e) => setF((prev) => ({ ...prev, offerStartDateFrom: e.target.value || undefined }))}
                 InputLabelProps={{ shrink: true }}
               />
               <TextField
@@ -199,8 +199,8 @@ export function StudentFilterDialog({ open, onClose, onApply, initial }: Props) 
                 type="date"
                 size="small"
                 fullWidth
-                value={f.offgrStartDateTo ?? ''}
-                onChange={(e) => setF((prev) => ({ ...prev, offgrStartDateTo: e.target.value || undefined }))}
+                value={f.offerStartDateTo ?? ''}
+                onChange={(e) => setF((prev) => ({ ...prev, offerStartDateTo: e.target.value || undefined }))}
                 InputLabelProps={{ shrink: true }}
               />
             </Box>
