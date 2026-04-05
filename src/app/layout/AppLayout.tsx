@@ -273,7 +273,7 @@ export function AppLayout() {
             <IconButton onClick={() => setMobileOpen((v) => !v)} edge="start">
               <MenuIcon />
             </IconButton>
-            <Typography sx={{ fontWeight: 700, fontSize: 16 }}>Yadro</Typography>
+            <Box component="img" src={logo} alt="Logo" sx={{ height: 28 }} />
           </Toolbar>
         </AppBar>
       )}
