@@ -48,8 +48,13 @@ export async function createUser(payload: CreateUserRequest): Promise<CreateUser
   }
 }
 
-export async function confirmCreateUser(payload: ConfirmCreateUserRequest): Promise<UserDto> {
-  const { data } = await http.post<UserDto>('/api/v1/users/confirm', payload)
+export async function confirmCreateUser(
+  sourceUserId: number,
+  payload: ConfirmCreateUserRequest
+): Promise<UserDto> {
+  const { data } = await http.post<UserDto>('/api/v1/users/confirm-create', payload, {
+    params: { sourceUserId },
+  })
   return data
 }
 

@@ -140,7 +140,7 @@ export function AddUserModal({ open, onClose, onSuccess }: AddUserModalProps) {
     try {
       const data = conflict.newUserData
       const phoneDigits = normalizePhoneDigits(data.phoneNumber)
-      await confirmCreateUser({
+      await confirmCreateUser(conflict.existingUser.id, {
         lastName: data.lastName,
         firstName: data.firstName,
         documentType: data.documentType as DocType,
