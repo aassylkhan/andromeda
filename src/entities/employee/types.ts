@@ -18,11 +18,11 @@ export interface EmployeeListItemDto {
   lastName: string
   firstName: string
   phoneNumber: string | null
-  pnOrIin: string | null
   role: EmployeeRole
   status: EmployeeStatus
   supervisorId?: number | null
-  supervisorName?: string | null
+  supervisorLastName?: string | null
+  supervisorFirstName?: string | null
 }
 
 export interface PageResponse<T> {
@@ -38,8 +38,8 @@ export interface CreateEmployeeFromUserRequest {
 }
 
 export interface UpdateEmployeeRequest {
-  role?: string
-  supervisorId?: number
+  role: string
+  supervisorId: number
 }
 
 export const ROLE_LABELS: Record<EmployeeRole, string> = {

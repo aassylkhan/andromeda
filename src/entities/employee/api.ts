@@ -7,7 +7,7 @@ import type {
   UpdateEmployeeRequest,
 } from './types'
 
-type EmployeesResponse = PageResponse<EmployeeListItemDto> | PageResponse<Employee> | Employee[]
+type EmployeesResponse = PageResponse<EmployeeListItemDto>
 
 interface GetEmployeesParams {
   page?: number
@@ -15,7 +15,7 @@ interface GetEmployeesParams {
   q?: string
   roles?: string
   statuses?: string
-  supervisors?: string
+  supervisorIds?: string
 }
 
 const listItemToEmployee = (item: EmployeeListItemDto): Employee => ({
@@ -26,20 +26,13 @@ const listItemToEmployee = (item: EmployeeListItemDto): Employee => ({
   role: item.role,
   status: item.status,
   supervisorId: item.supervisorId,
-  supervisorName: item.supervisorName,
+  supervisorName:
+    [item.supervisorLastName, item.supervisorFirstName].filter(Boolean).join(' ') || null,
 })
 
 function normalizeResponse(data: EmployeesResponse): { items: Employee[]; total: number } {
-  if (Array.isArray(data)) {
-    const items = data.map((e) =>
-      'pnOrIin' in e ? listItemToEmployee(e as EmployeeListItemDto) : (e as Employee)
-    )
-    return { items, total: items.length }
-  }
   const raw = data.content ?? []
-  const items = raw.map((e) =>
-    'pnOrIin' in e ? listItemToEmployee(e as EmployeeListItemDto) : (e as Employee)
-  )
+  const items = raw.map(listItemToEmployee)
   return { items, total: data.totalElements ?? items.length }
 }
 
@@ -53,7 +46,7 @@ export async function getEmployees(
       ...(params?.q && { q: params.q }),
       ...(params?.roles && { roles: params.roles }),
       ...(params?.statuses && { statuses: params.statuses }),
-      ...(params?.supervisors && { supervisors: params.supervisors }),
+      ...(params?.supervisorIds && { supervisorIds: params.supervisorIds }),
     },
   })
   return normalizeResponse(data)
@@ -61,14 +54,13 @@ export async function getEmployees(
 
 export async function createEmployeeFromUser(
   payload: CreateEmployeeFromUserRequest
-): Promise<Employee> {
+): Promise<void> {
   try {
-    const { data } = await http.post<Employee>('/api/v1/employees', {
+    await http.post('/api/v1/employees', {
       userId: payload.userId,
       role: payload.role.toUpperCase(),
       supervisorId: payload.supervisorId,
     })
-    return data
   } catch (error: any) {
     const msg = error?.response?.data?.message || 'Ошибка при добавлении сотрудника'
     const status = error?.response?.status
@@ -82,24 +74,19 @@ export async function createEmployeeFromUser(
 export async function updateEmployee(
   userId: number,
   payload: UpdateEmployeeRequest
-): Promise<Employee> {
-  const { data } = await http.patch<Employee>(`/api/v1/employees/${userId}`, {
-    ...(payload.role && { role: payload.role.toUpperCase() }),
-    ...(payload.supervisorId && { supervisorId: payload.supervisorId }),
+): Promise<void> {
+  await http.put(`/api/v1/employees/${userId}`, {
+    role: payload.role.toUpperCase(),
+    supervisorId: payload.supervisorId,
   })
-  return data
 }
 
-export async function updateEmployeeStatus(userId: number, active: boolean): Promise<Employee> {
-  const { data } = await http.patch<Employee>(`/api/v1/employees/${userId}/status`, null, {
-    params: { active },
-  })
-  return data
+export async function updateEmployeeStatus(userId: number): Promise<void> {
+  await http.patch(`/api/v1/employees/${userId}/toggle-status`)
 }
 
-export async function assignAsHead(userId: number): Promise<Employee> {
-  const { data } = await http.patch<Employee>(`/api/v1/employees/${userId}/assign-head`)
-  return data
+export async function assignAsHead(userId: number): Promise<void> {
+  await http.patch(`/api/v1/employees/${userId}/assign-head`)
 }
 
 export async function getSupervisors(): Promise<Employee[]> {

@@ -84,7 +84,7 @@ const EmployeesPage: React.FC = () => {
         q: debouncedSearch || undefined,
         roles: selectedRoles.length ? selectedRoles.join(',') : undefined,
         statuses: selectedStatuses.length ? selectedStatuses.join(',') : undefined,
-        supervisors: selectedSupervisors.length ? selectedSupervisors.join(',') : undefined,
+        supervisorIds: selectedSupervisors.length ? selectedSupervisors.join(',') : undefined,
       })
       setEmployees(result.items)
       setTotal(result.total)
@@ -124,7 +124,7 @@ const EmployeesPage: React.FC = () => {
     }
 
     try {
-      await updateEmployeeStatus(contextEmployee.userId, contextEmployee.status !== 'ACTIVE')
+      await updateEmployeeStatus(contextEmployee.userId)
       enqueueSnackbar('Статус обновлен', { variant: 'success' })
       await fetchEmployees()
     } catch (err) {

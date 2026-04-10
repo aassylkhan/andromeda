@@ -55,6 +55,7 @@ export function EditEmployeeModal({ open, onClose, onSuccess, employee }: EditEm
   if (!employee) return null
 
   const handleSave = async () => {
+    if (!role || !supervisorId) return
     setLoading(true)
     try {
       await updateEmployee(employee.userId, {
@@ -111,7 +112,7 @@ export function EditEmployeeModal({ open, onClose, onSuccess, employee }: EditEm
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} disabled={loading}>Отменить</Button>
-        <Button variant="contained" onClick={handleSave} disabled={loading}>
+        <Button variant="contained" onClick={handleSave} disabled={loading || !role || !supervisorId}>
           {loading ? <CircularProgress size={20} /> : 'Сохранить'}
         </Button>
       </DialogActions>
