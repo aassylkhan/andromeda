@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   Box,
@@ -44,16 +44,28 @@ const StudentDetailPage: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const [tabIndex, setTabIndex] = useState(0)
   const [enrollOpen, setEnrollOpen] = useState(false)
+  const requestIdRef = useRef(0)
 
   const loadStudent = useCallback(() => {
     if (!id) return
+    const currentRequestId = ++requestIdRef.current
     setLoading(true)
     getStudentDetail(Number(id))
-      .then(setStudent)
-      .catch((err) => {
-        enqueueSnackbar(err instanceof Error ? err.message : 'Ошибка загрузки', { variant: 'error' })
+      .then((data) => {
+        if (requestIdRef.current === currentRequestId) {
+          setStudent(data)
+        }
       })
-      .finally(() => setLoading(false))
+      .catch((err) => {
+        if (requestIdRef.current === currentRequestId) {
+          enqueueSnackbar(err instanceof Error ? err.message : 'Ошибка загрузки', { variant: 'error' })
+        }
+      })
+      .finally(() => {
+        if (requestIdRef.current === currentRequestId) {
+          setLoading(false)
+        }
+      })
   }, [id, enqueueSnackbar])
 
   useEffect(() => { loadStudent() }, [loadStudent])

@@ -16,6 +16,7 @@ import {
 import AddIcon from '@mui/icons-material/Add'
 import FilterListIcon from '@mui/icons-material/FilterList'
 import MeetingRoomOutlinedIcon from '@mui/icons-material/MeetingRoomOutlined'
+import { useSnackbar } from 'notistack'
 import { useAuthStore } from '../../entities/auth'
 import { getOffices } from '../../entities/lookup/api'
 import {
@@ -66,6 +67,7 @@ const EMPTY_FILTER: ScheduleFilter = {
 }
 
 export default function OfflineSchedulePage() {
+  const { enqueueSnackbar } = useSnackbar()
   const user = useAuthStore((s) => s.user)
 
   const [offices, setOffices] = useState<LookupDto[]>([])
@@ -104,7 +106,7 @@ export default function OfflineSchedulePage() {
       setClassrooms(classroomsData)
       setGroups(groupsData)
     } catch {
-      // error handled silently
+      enqueueSnackbar('Ошибка загрузки расписания', { variant: 'error' })
     } finally {
       setLoading(false)
     }

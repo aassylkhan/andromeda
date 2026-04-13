@@ -86,6 +86,7 @@ export function EditGroupDialog({ open, groupId, onClose, onUpdated, onDeleted }
   const [addStudentOpen, setAddStudentOpen] = useState(false)
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [removingStudentId, setRemovingStudentId] = useState<number | null>(null)
 
   const loadDetail = useCallback(async () => {
     setLoadingDetail(true)
@@ -120,6 +121,8 @@ export function EditGroupDialog({ open, groupId, onClose, onUpdated, onDeleted }
       setClassrooms(classroomsList)
       setTeacherId(d.teacherId)
       setClassroomId(d.classroomId)
+    } catch (err: any) {
+      setError(err?.response?.data?.message || 'Ошибка загрузки данных группы')
     } finally {
       setLoadingDetail(false)
     }
@@ -194,11 +197,14 @@ export function EditGroupDialog({ open, groupId, onClose, onUpdated, onDeleted }
   }
 
   const handleRemoveStudent = async (studentId: number) => {
+    setRemovingStudentId(studentId)
     try {
       await removeStudentFromGroup(groupId, studentId)
       await loadDetail()
     } catch (err: any) {
       setError(err?.response?.data?.message || 'Ошибка при удалении ученика')
+    } finally {
+      setRemovingStudentId(null)
     }
   }
 
@@ -342,8 +348,12 @@ export function EditGroupDialog({ open, groupId, onClose, onUpdated, onDeleted }
                         size="small"
                         onClick={() => handleRemoveStudent(m.studentId)}
                         color="error"
+                        disabled={removingStudentId === m.studentId}
                       >
-                        <DeleteOutlineIcon fontSize="small" />
+                        {removingStudentId === m.studentId
+                          ? <CircularProgress size={16} />
+                          : <DeleteOutlineIcon fontSize="small" />
+                        }
                       </IconButton>
                     }
                     sx={{ px: 0 }}

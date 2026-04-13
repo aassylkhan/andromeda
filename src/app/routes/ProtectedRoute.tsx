@@ -16,19 +16,16 @@ export function ProtectedRoute({ children, requiredRoles, requiredSections }: Pr
   const { user, loading, loadMe } = useAuthStore()
   const token = getAccessToken()
 
-  // Нет токена - сразу редирект на логин, НЕ вызываем loadMe()
-  if (!token) {
-    return <Navigate to="/login" replace />
-  }
-
   useEffect(() => {
-    // Вызываем loadMe() только если есть токен
     if (token && !user && !loading) {
       loadMe()
     }
   }, [token, user, loading, loadMe])
 
-  // Токен есть, но данные пользователя загружаются
+  if (!token) {
+    return <Navigate to="/login" replace />
+  }
+
   if (loading || !user) {
     return (
       <Box

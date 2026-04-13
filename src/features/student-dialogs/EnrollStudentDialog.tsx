@@ -250,8 +250,10 @@ export const EnrollStudentDialog: React.FC<EnrollStudentDialogProps> = ({ open, 
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setConfirmOpen(false)}>Отмена</Button>
-          <Button variant="contained" onClick={handleSubmit}>Подтвердить</Button>
+          <Button onClick={() => setConfirmOpen(false)} disabled={submitting}>Отмена</Button>
+          <Button variant="contained" onClick={handleSubmit} disabled={submitting}>
+            {submitting ? <CircularProgress size={20} /> : 'Подтвердить'}
+          </Button>
         </DialogActions>
       </Dialog>
     </>

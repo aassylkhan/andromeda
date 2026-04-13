@@ -52,6 +52,10 @@ export function AddStudentToGroupDialog({ open, groupId, onClose, onAdded }: Pro
           }))
         )
       })
+      .catch(() => {
+        setOptions([])
+        setError('Ошибка поиска учеников')
+      })
       .finally(() => setLoading(false))
   }, [debouncedQuery])
 

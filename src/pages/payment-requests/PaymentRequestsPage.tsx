@@ -65,6 +65,7 @@ const PaymentRequestsPage: React.FC = () => {
     action: 'confirmPayment' | 'denyPayment' | 'confirmSignature' | 'denySignature'
     label: string
   } | null>(null)
+  const [actionLoading, setActionLoading] = useState(false)
 
   const fetchData = useCallback(async () => {
     setLoading(true)
@@ -91,6 +92,7 @@ const PaymentRequestsPage: React.FC = () => {
 
   const doAction = async () => {
     if (!confirmDialog) return
+    setActionLoading(true)
     try {
       const fns = { confirmPayment, denyPayment, confirmSignature, denySignature }
       await fns[confirmDialog.action](confirmDialog.id)
@@ -101,6 +103,7 @@ const PaymentRequestsPage: React.FC = () => {
         ?? 'Ошибка'
       enqueueSnackbar(msg, { variant: 'error' })
     } finally {
+      setActionLoading(false)
       setConfirmDialog(null)
     }
   }
@@ -214,8 +217,10 @@ const PaymentRequestsPage: React.FC = () => {
           <Typography variant="body1" sx={{ mt: 1 }}>{confirmDialog?.label}</Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setConfirmDialog(null)}>Отмена</Button>
-          <Button variant="contained" onClick={doAction}>Подтвердить</Button>
+          <Button onClick={() => setConfirmDialog(null)} disabled={actionLoading}>Отмена</Button>
+          <Button variant="contained" onClick={doAction} disabled={actionLoading}>
+            {actionLoading ? <CircularProgress size={20} /> : 'Подтвердить'}
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>

@@ -74,6 +74,8 @@ export function CreateGroupDialog({ open, defaultOfficeId, onClose, onCreated }:
       setGroupTypes(gt)
       setSubjects(s)
       setOffices(o)
+    }).catch(() => {
+      setError('Ошибка загрузки справочников')
     })
   }, [open])
 
@@ -83,7 +85,7 @@ export function CreateGroupDialog({ open, defaultOfficeId, onClose, onCreated }:
       setTeacherId('')
       return
     }
-    getTeachersBySubject(Number(subjectId)).then(setTeachers)
+    getTeachersBySubject(Number(subjectId)).then(setTeachers).catch(() => setError('Ошибка загрузки преподавателей'))
     setTeacherId('')
   }, [subjectId])
 
@@ -93,7 +95,7 @@ export function CreateGroupDialog({ open, defaultOfficeId, onClose, onCreated }:
       setClassroomId('')
       return
     }
-    getClassrooms(officeId).then(setClassrooms)
+    getClassrooms(officeId).then(setClassrooms).catch(() => setError('Ошибка загрузки кабинетов'))
     setClassroomId('')
   }, [officeId])
 
