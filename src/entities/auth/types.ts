@@ -11,6 +11,7 @@ export interface UserSections {
   students: boolean
   parents: boolean
   paymentRequests: boolean
+  offlineSchedule: boolean
 }
 
 export interface User {

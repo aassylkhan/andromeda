@@ -11,6 +11,7 @@ import StudentDetailPage from '../pages/students/StudentDetailPage'
 import CuratorAssignmentPage from '../pages/students/CuratorAssignmentPage'
 import ParentsPage from '../pages/parents/ParentsPage'
 import PaymentRequestsPage from '../pages/payment-requests/PaymentRequestsPage'
+import OfflineSchedulePage from '../pages/schedule/OfflineSchedulePage'
 
 const STUDENTS_PARENTS_ROLES = ['director', 'head', 'curator', 'expert']
 const PAYMENT_REQUESTS_ROLES = ['director', 'head', 'accountant', 'expert']
@@ -91,6 +92,14 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute requiredRoles={PAYMENT_REQUESTS_ROLES} requiredSections={['paymentRequests']}>
             <PaymentRequestsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'offline-schedule',
+        element: (
+          <ProtectedRoute requiredSections={['offlineSchedule']}>
+            <OfflineSchedulePage />
           </ProtectedRoute>
         ),
       },

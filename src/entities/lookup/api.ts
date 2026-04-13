@@ -36,6 +36,11 @@ export async function getExperts(): Promise<LookupDto[]> {
   return data
 }
 
+export async function getSubjects(): Promise<LookupDto[]> {
+  const { data } = await http.get<LookupDto[]>('/api/v1/lookups/subjects')
+  return data
+}
+
 export async function getProductsDetail(): Promise<ProductDetailDto[]> {
   const { data } = await http.get<ProductDetailDto[]>('/api/v1/lookups/products-detail')
   return data
