@@ -42,11 +42,16 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     set({ loading: true, error: null })
     try {
       await authApi.sendCode({ phoneNumber })
-    } catch {
-      // SMS service not configured yet — proceed with master code
+      localStorage.setItem(PHONE_NUMBER_KEY, phoneNumber)
+      set({ phoneNumber, loading: false })
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message ??
+        error?.response?.data?.error ??
+        (error instanceof Error ? error.message : 'Не удалось отправить код')
+      set({ error: message, loading: false })
+      throw error
     }
-    localStorage.setItem(PHONE_NUMBER_KEY, phoneNumber)
-    set({ phoneNumber, loading: false })
   },
 
   login: async (phoneNumber: string, code: string) => {
