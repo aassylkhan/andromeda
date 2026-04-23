@@ -17,6 +17,8 @@ import { getStudentDetail } from '../../entities/student/api'
 import type { StudentDetail } from '../../entities/student/types'
 import { formatPhoneForUi } from '../../shared/utils/phoneUtils'
 import { ParentsTab } from './tabs/ParentsTab'
+import { TransactionsTab } from './tabs/TransactionsTab'
+import { AccrualsTab } from './tabs/AccrualsTab'
 import { EnrollStudentDialog } from '../../features/student-dialogs/EnrollStudentDialog'
 
 const Field: React.FC<{ label: string; value: React.ReactNode }> = ({ label, value }) => (
@@ -44,6 +46,7 @@ const StudentDetailPage: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const [tabIndex, setTabIndex] = useState(0)
   const [enrollOpen, setEnrollOpen] = useState(false)
+  const [refreshKey, setRefreshKey] = useState(0)
   const requestIdRef = useRef(0)
 
   const loadStudent = useCallback(() => {
@@ -170,9 +173,22 @@ const StudentDetailPage: React.FC = () => {
           sx={{ borderBottom: '1px solid rgba(145,158,171,0.12)', px: 2 }}
         >
           <Tab label="Родители" />
+          <Tab label="Транзакции" />
+          <Tab label="Начисления" />
         </Tabs>
         <Box sx={{ p: 2 }}>
           {tabIndex === 0 && <ParentsTab studentId={student.studentId} />}
+          {tabIndex === 1 && <TransactionsTab studentId={student.studentId} refreshKey={refreshKey} />}
+          {tabIndex === 2 && (
+            <AccrualsTab
+              studentId={student.studentId}
+              refreshKey={refreshKey}
+              onConvertSuccess={() => {
+                setRefreshKey((k) => k + 1)
+                loadStudent()
+              }}
+            />
+          )}
         </Box>
       </Paper>
 

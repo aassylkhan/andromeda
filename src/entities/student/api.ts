@@ -1,5 +1,5 @@
 import { http } from '../../shared/api'
-import type { StudentListItem, StudentDetail, StudentLookupItem, StudentParentLink, PageResponse } from './types'
+import type { StudentListItem, StudentDetail, StudentLookupItem, StudentParentLink, PageResponse, TransactionItem, AccrualItem } from './types'
 
 export interface GetStudentsParams {
   page?: number
@@ -103,6 +103,22 @@ export interface CreatePaymentRequestData {
 export async function createPaymentRequest(studentId: number, data: CreatePaymentRequestData) {
   const { data: result } = await http.post(`/api/v1/students/${studentId}/payment-requests`, data)
   return result
+}
+
+// ==================== Transactions & Accruals ====================
+
+export async function getStudentTransactions(studentId: number): Promise<TransactionItem[]> {
+  const { data } = await http.get<TransactionItem[]>(`/api/v1/students/${studentId}/transactions`)
+  return data
+}
+
+export async function getStudentAccruals(studentId: number): Promise<AccrualItem[]> {
+  const { data } = await http.get<AccrualItem[]>(`/api/v1/students/${studentId}/accruals`)
+  return data
+}
+
+export async function convertBack(studentId: number, accrualId: number, amount: number): Promise<void> {
+  await http.post(`/api/v1/students/${studentId}/accruals/${accrualId}/convert-back`, { amount })
 }
 
 // ==================== Curator Assignment ====================

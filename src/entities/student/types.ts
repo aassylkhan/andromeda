@@ -76,3 +76,21 @@ export interface PageResponse<T> {
   totalElements: number
   totalPages: number
 }
+
+export interface TransactionItem {
+  id: number
+  createdAt: string
+  amount: number
+  transactionTypeName: string
+  details: string | null
+}
+
+export interface AccrualItem {
+  id: number
+  createdAt: string
+  accountTypeName: string
+  accrual: number
+  price: number
+  rate: number
+  remain: number
+}
