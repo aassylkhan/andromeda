@@ -94,3 +94,10 @@ export interface AccrualItem {
   rate: number
   remain: number
 }
+
+export interface PriceItem {
+  id: number
+  hourType: string
+  price: number
+  concessionPrice: number
+}

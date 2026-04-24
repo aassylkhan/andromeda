@@ -1,5 +1,5 @@
 import { http } from '../../shared/api'
-import type { StudentListItem, StudentDetail, StudentLookupItem, StudentParentLink, PageResponse, TransactionItem, AccrualItem } from './types'
+import type { StudentListItem, StudentDetail, StudentLookupItem, StudentParentLink, PageResponse, TransactionItem, AccrualItem, PriceItem } from './types'
 
 export interface GetStudentsParams {
   page?: number
@@ -119,6 +119,17 @@ export async function getStudentAccruals(studentId: number): Promise<AccrualItem
 
 export async function convertBack(studentId: number, accrualId: number, amount: number): Promise<void> {
   await http.post(`/api/v1/students/${studentId}/accruals/${accrualId}/convert-back`, { amount })
+}
+
+// ==================== Prices & Purchase Hours ====================
+
+export async function getPrices(): Promise<PriceItem[]> {
+  const { data } = await http.get<PriceItem[]>('/api/v1/lookups/prices')
+  return data
+}
+
+export async function purchaseHours(studentId: number, priceId: number, quantity: number): Promise<void> {
+  await http.post(`/api/v1/students/${studentId}/purchase-hours`, { priceId, quantity })
 }
 
 // ==================== Curator Assignment ====================

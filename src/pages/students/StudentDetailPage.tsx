@@ -20,6 +20,7 @@ import { ParentsTab } from './tabs/ParentsTab'
 import { TransactionsTab } from './tabs/TransactionsTab'
 import { AccrualsTab } from './tabs/AccrualsTab'
 import { EnrollStudentDialog } from '../../features/student-dialogs/EnrollStudentDialog'
+import { PurchaseHoursDialog } from '../../features/student-dialogs/PurchaseHoursDialog'
 
 const Field: React.FC<{ label: string; value: React.ReactNode }> = ({ label, value }) => (
   <Box sx={{ mb: 1.5 }}>
@@ -46,6 +47,7 @@ const StudentDetailPage: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const [tabIndex, setTabIndex] = useState(0)
   const [enrollOpen, setEnrollOpen] = useState(false)
+  const [purchaseOpen, setPurchaseOpen] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
   const requestIdRef = useRef(0)
 
@@ -162,6 +164,9 @@ const StudentDetailPage: React.FC = () => {
           <Button variant="contained" onClick={handleEnrollClick}>
             Записать на обучение
           </Button>
+          <Button variant="contained" color="secondary" onClick={() => setPurchaseOpen(true)}>
+            Купить часы
+          </Button>
         </Box>
       </Paper>
 
@@ -199,6 +204,18 @@ const StudentDetailPage: React.FC = () => {
         student={student}
         onSuccess={() => {
           setEnrollOpen(false)
+          loadStudent()
+        }}
+      />
+
+      {/* Purchase Hours Dialog */}
+      <PurchaseHoursDialog
+        open={purchaseOpen}
+        onClose={() => setPurchaseOpen(false)}
+        student={student}
+        onSuccess={() => {
+          setPurchaseOpen(false)
+          setRefreshKey((k) => k + 1)
           loadStudent()
         }}
       />
