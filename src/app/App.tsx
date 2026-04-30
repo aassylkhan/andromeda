@@ -4,22 +4,32 @@ import { router } from './router'
 import { AppFrontendRoot } from '../app-frontend/routes/AppFrontendRoot'
 
 /**
- * Determines whether the current page is the parent/student app frontend
- * (app.andromeda.kz) or the employee CRM (yadro.andromeda.kz).
+ * Whitelist of hostnames that should serve the parent/student web app
+ * (app.andromeda.kz). All other hostnames serve the employee CRM.
  *
- * Detection order:
- *  1. Build-time override via VITE_APP_MODE = 'app' | 'crm' (used by docker-compose/CI).
- *  2. Hostname inspection (works for both prod and local hosts file setups).
+ * Detection priority:
+ *  1. Build-time override via VITE_APP_MODE = 'app' | 'crm' (CI / docker-compose).
+ *  2. Hostname inspection against the whitelist below.
+ *
+ * NB: any "app.*" subdomain that is not in the list will serve the employee CRM
+ * by default — это намеренно, чтобы preview/dev-домены случайно не открывали
+ * мобильное приложение для родителей.
  */
+const APP_HOSTNAMES = new Set<string>([
+  'app.andromeda.kz',
+  'app.andromedaedu.kz',
+])
+
 function isAppFrontend(): boolean {
   const buildMode = import.meta.env.VITE_APP_MODE
   if (buildMode === 'app') return true
   if (buildMode === 'crm') return false
 
-  const host = typeof window !== 'undefined' ? window.location.hostname : ''
+  const host = typeof window !== 'undefined' ? window.location.hostname.toLowerCase() : ''
   if (!host) return false
-  if (host === 'app.andromeda.kz' || host === 'app.andromedaedu.kz') return true
-  if (host.startsWith('app.')) return true
+  if (APP_HOSTNAMES.has(host)) return true
+  // Allow local dev на app.localhost / app.127.0.0.1 для тестов.
+  if (host === 'app.localhost' || host.startsWith('app.localhost.')) return true
   return false
 }
 

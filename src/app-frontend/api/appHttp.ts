@@ -1,14 +1,18 @@
 import axios, { AxiosError } from 'axios'
 import type { AxiosInstance, InternalAxiosRequestConfig } from 'axios'
 import {
-  getAccessToken,
-  getRefreshToken,
-  clearTokens,
-  setTokens,
-} from '../../shared/api/tokens'
+  getAppAccessToken,
+  getAppRefreshToken,
+  clearAppTokens,
+  setAppTokens,
+} from './appTokens'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'https://api.andromedaedu.kz'
 
+/**
+ * Эндпоинты, на которые НЕ нужно подкладывать Authorization
+ * и которые НЕ должны триггерить refresh-логику.
+ */
 const APP_AUTH_EXCLUDE = [
   '/api/v1/app-auth/send-code',
   '/api/v1/app-auth/login',
@@ -18,6 +22,7 @@ const APP_AUTH_EXCLUDE = [
 const appHttp: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
   timeout: 15000,
+  withCredentials: false,
 })
 
 let isRefreshing = false
@@ -52,7 +57,7 @@ const redirectToLogin = () => {
 appHttp.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     if (!isExcluded(config.url)) {
-      const token = getAccessToken()
+      const token = getAppAccessToken()
       if (token) {
         config.headers.Authorization = `Bearer ${token}`
       }
@@ -71,6 +76,14 @@ appHttp.interceptors.response.use(
       return Promise.reject(error)
     }
 
+    // 403 (Forbidden) — токен валиден, но не имеет доступа к этому ресурсу.
+    // Например APP token попал в employee endpoint. Чистим токены и редиректим.
+    if (error.response?.status === 403) {
+      clearAppTokens()
+      redirectToLogin()
+      return Promise.reject(error)
+    }
+
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
@@ -86,9 +99,9 @@ appHttp.interceptors.response.use(
       originalRequest._retry = true
       isRefreshing = true
 
-      const refreshToken = getRefreshToken()
+      const refreshToken = getAppRefreshToken()
       if (!refreshToken) {
-        clearTokens()
+        clearAppTokens()
         redirectToLogin()
         return Promise.reject(error)
       }
@@ -100,13 +113,13 @@ appHttp.interceptors.response.use(
           { timeout: 15000 }
         )
         const { accessToken, refreshToken: newRefreshToken } = response.data
-        setTokens({ accessToken, refreshToken: newRefreshToken })
+        setAppTokens({ accessToken, refreshToken: newRefreshToken })
         processQueue(null, accessToken)
 
         originalRequest.headers.Authorization = `Bearer ${accessToken}`
         return appHttp(originalRequest)
       } catch (refreshError) {
-        clearTokens()
+        clearAppTokens()
         processQueue(refreshError as AxiosError, null)
         redirectToLogin()
         return Promise.reject(refreshError)

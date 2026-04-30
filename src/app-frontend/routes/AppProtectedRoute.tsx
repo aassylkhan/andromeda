@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
 import { Box, CircularProgress } from '@mui/material'
 import { useAppAuthStore } from '../store/appAuthStore'
-import { getAccessToken } from '../../shared/api'
+import { getAppAccessToken } from '../api/appTokens'
 import type { AppMode } from '../api/appAuthApi'
 
 interface AppProtectedRouteProps {
@@ -19,7 +19,7 @@ interface AppProtectedRouteProps {
 export const AppProtectedRoute: React.FC<AppProtectedRouteProps> = ({ children, requiredModes }) => {
   const { user, loading, loadMe } = useAppAuthStore()
   const location = useLocation()
-  const token = getAccessToken()
+  const token = getAppAccessToken()
 
   useEffect(() => {
     if (token && !user && !loading) {

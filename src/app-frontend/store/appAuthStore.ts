@@ -1,9 +1,9 @@
 import { create } from 'zustand'
-import { setTokens, clearTokens, getAccessToken } from '../../shared/api/tokens'
+import { setAppTokens, clearAppTokens, getAppAccessToken } from '../api/appTokens'
 import * as api from '../api/appAuthApi'
 import type { AppCurrentUser, AppFlow } from '../api/appAuthApi'
 
-const PHONE_KEY = 'app_tempPhone'
+const PHONE_KEY = 'app:tempPhone'
 
 interface AppAuthState {
   user: AppCurrentUser | null
@@ -61,7 +61,7 @@ export const useAppAuthStore = create<AppAuthStore>((set, get) => ({
     set({ loading: true, error: null })
     try {
       const result = await api.appLogin(phoneNumber, code)
-      setTokens({ accessToken: result.accessToken, refreshToken: result.refreshToken })
+      setAppTokens({ accessToken: result.accessToken, refreshToken: result.refreshToken })
       localStorage.removeItem(PHONE_KEY)
       set({
         loading: false,
@@ -80,7 +80,7 @@ export const useAppAuthStore = create<AppAuthStore>((set, get) => ({
     set({ loading: true, error: null })
     try {
       const result = await api.appSelectMode(mode)
-      setTokens({ accessToken: result.accessToken, refreshToken: result.refreshToken })
+      setAppTokens({ accessToken: result.accessToken, refreshToken: result.refreshToken })
       set({ loading: false, user: result.user, lastFlow: result.flow })
       return result.flow
     } catch (e: unknown) {
@@ -90,7 +90,7 @@ export const useAppAuthStore = create<AppAuthStore>((set, get) => ({
   },
 
   loadMe: async () => {
-    const token = getAccessToken()
+    const token = getAppAccessToken()
     if (!token) {
       set({ user: null })
       return
@@ -101,8 +101,8 @@ export const useAppAuthStore = create<AppAuthStore>((set, get) => ({
       set({ user, loading: false })
     } catch (e: unknown) {
       const status = (e as { response?: { status?: number } })?.response?.status
-      if (status === 401) {
-        clearTokens()
+      if (status === 401 || status === 403) {
+        clearAppTokens()
         set({ user: null, loading: false, error: null })
         return
       }
@@ -114,8 +114,10 @@ export const useAppAuthStore = create<AppAuthStore>((set, get) => ({
     set({ loading: true })
     try {
       await api.appLogout()
+    } catch {
+      // даже если backend не ответил — чистим клиентскую сессию
     } finally {
-      clearTokens()
+      clearAppTokens()
       localStorage.removeItem(PHONE_KEY)
       set({ user: null, loading: false, error: null, phoneNumber: null, lastFlow: null })
     }
@@ -123,7 +125,7 @@ export const useAppAuthStore = create<AppAuthStore>((set, get) => ({
   },
 
   reset: () => {
-    clearTokens()
+    clearAppTokens()
     localStorage.removeItem(PHONE_KEY)
     set({ user: null, loading: false, error: null, phoneNumber: null, lastFlow: null })
   },
