@@ -53,7 +53,14 @@ export function LoginPage() {
             component="img"
             src={logo}
             alt="Yadro by Andromeda"
-            sx={{ height: 48, width: 'auto', mb: 2, display: 'inline-block' }}
+            sx={{
+              height: 44,
+              width: 'auto',
+              maxWidth: 220,
+              objectFit: 'contain',
+              mb: 2,
+              display: 'inline-block',
+            }}
           />
           <Typography variant="h4" sx={{ mb: 1 }}>
             Вход в платформу для сотрудников

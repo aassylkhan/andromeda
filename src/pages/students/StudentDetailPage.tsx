@@ -21,6 +21,7 @@ import { TransactionsTab } from './tabs/TransactionsTab'
 import { AccrualsTab } from './tabs/AccrualsTab'
 import { EnrollStudentDialog } from '../../features/student-dialogs/EnrollStudentDialog'
 import { PurchaseHoursDialog } from '../../features/student-dialogs/PurchaseHoursDialog'
+import { ExtensionRequestDialog } from '../../features/student-dialogs/ExtensionRequestDialog'
 
 const Field: React.FC<{ label: string; value: React.ReactNode }> = ({ label, value }) => (
   <Box sx={{ mb: 1.5 }}>
@@ -48,6 +49,7 @@ const StudentDetailPage: React.FC = () => {
   const [tabIndex, setTabIndex] = useState(0)
   const [enrollOpen, setEnrollOpen] = useState(false)
   const [purchaseOpen, setPurchaseOpen] = useState(false)
+  const [extensionOpen, setExtensionOpen] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
   const requestIdRef = useRef(0)
 
@@ -102,6 +104,17 @@ const StudentDetailPage: React.FC = () => {
       return
     }
     setEnrollOpen(true)
+  }
+
+  const handleExtensionClick = () => {
+    if (student.productId == null) {
+      enqueueSnackbar(
+        'У ученика не назначен продукт обучения, расчёт пролонгации невозможен',
+        { variant: 'error' }
+      )
+      return
+    }
+    setExtensionOpen(true)
   }
 
   return (
@@ -167,6 +180,9 @@ const StudentDetailPage: React.FC = () => {
           <Button variant="contained" color="secondary" onClick={() => setPurchaseOpen(true)}>
             Купить часы
           </Button>
+          <Button variant="outlined" color="primary" onClick={handleExtensionClick}>
+            Пролонгация
+          </Button>
         </Box>
       </Paper>
 
@@ -218,6 +234,14 @@ const StudentDetailPage: React.FC = () => {
           setRefreshKey((k) => k + 1)
           loadStudent()
         }}
+      />
+
+      {/* Extension Request Dialog (Пролонгация) */}
+      <ExtensionRequestDialog
+        open={extensionOpen}
+        onClose={() => setExtensionOpen(false)}
+        student={student}
+        onSuccess={() => setExtensionOpen(false)}
       />
     </Box>
   )

@@ -165,7 +165,7 @@ export function AppLayout() {
   const drawerContent = (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', pt: 2.5, px: 2.5 }}>
       {/* Logo */}
-      <Box sx={{ mb: 2 }}>
+      <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'flex-start' }}>
         <Box
           component="img"
           src={logo}
@@ -176,9 +176,9 @@ export function AppLayout() {
             if (isMobile) setMobileOpen(false)
           }}
           sx={{
-            height: 60,
+            height: 36,
             width: 'auto',
-            maxWidth: '100%',
+            maxWidth: 220,
             objectFit: 'contain',
             cursor: 'pointer',
             userSelect: 'none',
@@ -280,7 +280,12 @@ export function AppLayout() {
             <IconButton onClick={() => setMobileOpen((v) => !v)} edge="start">
               <MenuIcon />
             </IconButton>
-            <Box component="img" src={logo} alt="Logo" sx={{ height: 28 }} />
+            <Box
+              component="img"
+              src={logo}
+              alt="Yadro by Andromeda"
+              sx={{ height: 24, width: 'auto', maxWidth: 160, objectFit: 'contain' }}
+            />
           </Toolbar>
         </AppBar>
       )}
