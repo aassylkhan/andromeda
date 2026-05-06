@@ -28,6 +28,7 @@ import SchoolOutlinedIcon from '@mui/icons-material/SchoolOutlined'
 import FamilyRestroomOutlinedIcon from '@mui/icons-material/FamilyRestroomOutlined'
 import PaymentOutlinedIcon from '@mui/icons-material/PaymentOutlined'
 import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined'
+import GridViewOutlinedIcon from '@mui/icons-material/GridViewOutlined'
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded'
 
 const logo = '/YadroSide.png'
@@ -97,6 +98,12 @@ export function AppLayout() {
         icon: <CalendarMonthOutlinedIcon sx={{ width: NAV.iconSize, height: NAV.iconSize }} />,
         path: '/offline-schedule',
         sectionKey: 'offlineSchedule' as const,
+      },
+      {
+        label: 'Слоты',
+        icon: <GridViewOutlinedIcon sx={{ width: NAV.iconSize, height: NAV.iconSize }} />,
+        path: '/slots',
+        sectionKey: 'slots' as const,
       },
       {
         label: 'Сессии входа',

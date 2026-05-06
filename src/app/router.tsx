@@ -12,9 +12,11 @@ import CuratorAssignmentPage from '../pages/students/CuratorAssignmentPage'
 import ParentsPage from '../pages/parents/ParentsPage'
 import PaymentRequestsPage from '../pages/payment-requests/PaymentRequestsPage'
 import OfflineSchedulePage from '../pages/schedule/OfflineSchedulePage'
+import SlotsPage from '../pages/slots/SlotsPage'
 
 const STUDENTS_PARENTS_ROLES = ['director', 'head', 'curator', 'expert']
 const PAYMENT_REQUESTS_ROLES = ['director', 'head', 'accountant', 'expert']
+const SLOTS_ROLES = ['director', 'head', 'curator', 'expert']
 
 export const router = createBrowserRouter([
   {
@@ -100,6 +102,14 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute requiredSections={['offlineSchedule']}>
             <OfflineSchedulePage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'slots',
+        element: (
+          <ProtectedRoute requiredRoles={SLOTS_ROLES} requiredSections={['slots']}>
+            <SlotsPage />
           </ProtectedRoute>
         ),
       },

@@ -12,6 +12,7 @@ export interface UserSections {
   parents: boolean
   paymentRequests: boolean
   offlineSchedule: boolean
+  slots: boolean
 }
 
 export interface User {
