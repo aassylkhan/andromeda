@@ -10,6 +10,10 @@ import {
   Tabs,
   Tab,
   Avatar,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { useSnackbar } from 'notistack'
@@ -20,6 +24,7 @@ import { ParentsTab } from './tabs/ParentsTab'
 import { TransactionsTab } from './tabs/TransactionsTab'
 import { AccrualsTab } from './tabs/AccrualsTab'
 import { EnrollStudentDialog } from '../../features/student-dialogs/EnrollStudentDialog'
+import { EnrollStudent2Dialog } from '../../features/student-dialogs/EnrollStudent2Dialog'
 import { PurchaseHoursDialog } from '../../features/student-dialogs/PurchaseHoursDialog'
 import { ExtensionRequestDialog } from '../../features/student-dialogs/ExtensionRequestDialog'
 
@@ -48,6 +53,8 @@ const StudentDetailPage: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const [tabIndex, setTabIndex] = useState(0)
   const [enrollOpen, setEnrollOpen] = useState(false)
+  const [enroll2Open, setEnroll2Open] = useState(false)
+  const [alreadyEnrolledOpen, setAlreadyEnrolledOpen] = useState(false)
   const [purchaseOpen, setPurchaseOpen] = useState(false)
   const [extensionOpen, setExtensionOpen] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
@@ -104,6 +111,14 @@ const StudentDetailPage: React.FC = () => {
       return
     }
     setEnrollOpen(true)
+  }
+
+  const handleEnroll2Click = () => {
+    if (student.productId != null) {
+      setAlreadyEnrolledOpen(true)
+      return
+    }
+    setEnroll2Open(true)
   }
 
   const handleExtensionClick = () => {
@@ -173,9 +188,12 @@ const StudentDetailPage: React.FC = () => {
         <Divider sx={{ my: 2 }} />
 
         {/* Buttons */}
-        <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
+        <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', alignItems: 'center' }}>
           <Button variant="contained" onClick={handleEnrollClick}>
             Записать на обучение
+          </Button>
+          <Button variant="contained" color="primary" onClick={handleEnroll2Click}>
+            Записать на обучение 2
           </Button>
           <Button variant="contained" color="secondary" onClick={() => setPurchaseOpen(true)}>
             Купить часы
@@ -235,6 +253,32 @@ const StudentDetailPage: React.FC = () => {
           loadStudent()
         }}
       />
+
+      {/* Enrollment Dialog 2 (TZ-11) */}
+      <EnrollStudent2Dialog
+        open={enroll2Open}
+        onClose={() => setEnroll2Open(false)}
+        student={student}
+        onSuccess={() => {
+          setEnroll2Open(false)
+          loadStudent()
+        }}
+      />
+
+      {/* "Студент уже обучается" error modal for the second enrollment flow */}
+      <Dialog open={alreadyEnrolledOpen} onClose={() => setAlreadyEnrolledOpen(false)} maxWidth="xs" fullWidth>
+        <DialogTitle>Невозможно записать на обучение 2</DialogTitle>
+        <DialogContent>
+          <Typography variant="body1" sx={{ mt: 1 }}>
+            Данный ученик уже обучается.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button variant="contained" onClick={() => setAlreadyEnrolledOpen(false)}>
+            ОК
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Extension Request Dialog (Пролонгация) */}
       <ExtensionRequestDialog
