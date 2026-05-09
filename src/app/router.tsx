@@ -10,12 +10,12 @@ import StudentsPage from '../pages/students/StudentsPage'
 import StudentDetailPage from '../pages/students/StudentDetailPage'
 import CuratorAssignmentPage from '../pages/students/CuratorAssignmentPage'
 import ParentsPage from '../pages/parents/ParentsPage'
-import PaymentRequestsPage from '../pages/payment-requests/PaymentRequestsPage'
+import AccountingPage from '../pages/accounting/AccountingPage'
 import OfflineSchedulePage from '../pages/schedule/OfflineSchedulePage'
 import SlotsPage from '../pages/slots/SlotsPage'
 
 const STUDENTS_PARENTS_ROLES = ['director', 'head', 'curator', 'expert']
-const PAYMENT_REQUESTS_ROLES = ['director', 'head', 'accountant', 'expert']
+const ACCOUNTING_ROLES = ['director', 'head', 'accountant', 'expert', 'curator']
 const SLOTS_ROLES = ['director', 'head', 'curator', 'expert']
 
 export const router = createBrowserRouter([
@@ -90,12 +90,16 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: 'payment-requests',
+        path: 'accounting',
         element: (
-          <ProtectedRoute requiredRoles={PAYMENT_REQUESTS_ROLES} requiredSections={['paymentRequests']}>
-            <PaymentRequestsPage />
+          <ProtectedRoute requiredRoles={ACCOUNTING_ROLES} requiredSections={['accounting']}>
+            <AccountingPage />
           </ProtectedRoute>
         ),
+      },
+      {
+        path: 'payment-requests',
+        element: <Navigate to="/accounting" replace />,
       },
       {
         path: 'offline-schedule',

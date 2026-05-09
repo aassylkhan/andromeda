@@ -26,7 +26,7 @@ import BadgeOutlinedIcon from '@mui/icons-material/BadgeOutlined'
 import DevicesOutlinedIcon from '@mui/icons-material/DevicesOutlined'
 import SchoolOutlinedIcon from '@mui/icons-material/SchoolOutlined'
 import FamilyRestroomOutlinedIcon from '@mui/icons-material/FamilyRestroomOutlined'
-import PaymentOutlinedIcon from '@mui/icons-material/PaymentOutlined'
+import AccountBalanceOutlinedIcon from '@mui/icons-material/AccountBalanceOutlined'
 import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined'
 import GridViewOutlinedIcon from '@mui/icons-material/GridViewOutlined'
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded'
@@ -88,10 +88,10 @@ export function AppLayout() {
         sectionKey: 'parents' as const,
       },
       {
-        label: 'Новые оплаты',
-        icon: <PaymentOutlinedIcon sx={{ width: NAV.iconSize, height: NAV.iconSize }} />,
-        path: '/payment-requests',
-        sectionKey: 'paymentRequests' as const,
+        label: 'Бухгалтерия',
+        icon: <AccountBalanceOutlinedIcon sx={{ width: NAV.iconSize, height: NAV.iconSize }} />,
+        path: '/accounting',
+        sectionKey: 'accounting' as const,
       },
       {
         label: 'Оффлайн расписание',

@@ -13,6 +13,7 @@ export interface UserSections {
   paymentRequests: boolean
   offlineSchedule: boolean
   slots: boolean
+  accounting: boolean
 }
 
 export interface User {

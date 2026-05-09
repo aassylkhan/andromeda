@@ -51,7 +51,7 @@ export function AddEmployeeModal({ open, onClose, onSuccess }: AddEmployeeModalP
   const [usersLoading, setUsersLoading] = useState(false)
   const [selectedUser, setSelectedUser] = useState<UserDto | null>(null)
 
-  const [role, setRole] = useState('ACCOUNTANT')
+  const [role, setRole] = useState('CURATOR')
   const [supervisorId, setSupervisorId] = useState<number | ''>('')
   const [supervisors, setSupervisors] = useState<Employee[]>([])
   const [supervisorsLoading, setSupervisorsLoading] = useState(false)
@@ -64,7 +64,7 @@ export function AddEmployeeModal({ open, onClose, onSuccess }: AddEmployeeModalP
       setStep('select_user')
       setSearch('')
       setSelectedUser(null)
-      setRole('ACCOUNTANT')
+      setRole('CURATOR')
       setSupervisorId('')
     }
   }, [open])

@@ -57,7 +57,6 @@ export const STATUS_LABELS: Record<EmployeeStatus, string> = {
 }
 
 export const ASSIGNABLE_ROLES: { value: string; label: string }[] = [
-  { value: 'ACCOUNTANT', label: 'Бухгалтер' },
   { value: 'CURATOR', label: 'Куратор' },
   { value: 'TEACHER', label: 'Преподаватель' },
   { value: 'EXPERT', label: 'Эксперт' },
