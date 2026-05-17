@@ -10,9 +10,12 @@ import {
 } from '@mui/material'
 import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded'
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded'
+import CardGiftcardRoundedIcon from '@mui/icons-material/CardGiftcardRounded'
+import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded'
 import PersonOutlineRoundedIcon from '@mui/icons-material/PersonOutlineRounded'
 import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined'
 import { useAppAuthStore } from '../../store/appAuthStore'
+import { useParentChildrenStore } from '../../store/parentChildrenStore'
 import { AppShell } from '../../components/AppShell'
 import { LogoutConfirmDialog } from '../../components/LogoutConfirmDialog'
 import { formatPhoneForUi } from '../../../shared/utils/phoneUtils'
@@ -20,11 +23,26 @@ import { formatPhoneForUi } from '../../../shared/utils/phoneUtils'
 export const ParentSettingsPage: React.FC = () => {
   const navigate = useNavigate()
   const { user, loading, loadMe, logout } = useAppAuthStore()
+  const { children: kids, loaded: kidsLoaded, load: loadKids } = useParentChildrenStore()
   const [confirmOpen, setConfirmOpen] = useState(false)
 
   useEffect(() => {
     if (!user) loadMe()
   }, [user, loadMe])
+
+  useEffect(() => {
+    if (!kidsLoaded) loadKids()
+  }, [kidsLoaded, loadKids])
+
+  const hasChildren = kidsLoaded && kids.length > 0
+
+  const handleBack = () => {
+    if (hasChildren) {
+      navigate('/parent', { replace: true })
+    } else {
+      navigate('/parent/no-children', { replace: true })
+    }
+  }
 
   const handleLogout = async () => {
     setConfirmOpen(false)
@@ -46,15 +64,11 @@ export const ParentSettingsPage: React.FC = () => {
             bgcolor: '#FFFFFF',
           }}
         >
-          <IconButton
-            aria-label="Назад"
-            onClick={() => navigate('/parent', { replace: true })}
-            sx={{ color: '#637381' }}
-          >
+          <IconButton aria-label="Назад" onClick={handleBack} sx={{ color: '#637381' }}>
             <ArrowBackRoundedIcon />
           </IconButton>
           <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-            Настройки
+            Мой профиль
           </Typography>
         </Box>
 
@@ -92,6 +106,22 @@ export const ParentSettingsPage: React.FC = () => {
                   </Box>
                 </Box>
               </Paper>
+
+              <Button
+                variant="outlined"
+                startIcon={<CardGiftcardRoundedIcon />}
+                endIcon={<ChevronRightRoundedIcon />}
+                onClick={() => navigate('/parent/referral')}
+                sx={{
+                  minHeight: 48,
+                  justifyContent: 'flex-start',
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  '& .MuiButton-endIcon': { ml: 'auto' },
+                }}
+              >
+                Реферальная программа
+              </Button>
 
               <Button
                 variant="outlined"

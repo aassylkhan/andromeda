@@ -8,6 +8,8 @@ import {
   Typography,
 } from '@mui/material'
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded'
+import CardGiftcardRoundedIcon from '@mui/icons-material/CardGiftcardRounded'
+import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded'
 import { useAppAuthStore } from '../../store/appAuthStore'
 import { LogoutConfirmDialog } from '../../components/LogoutConfirmDialog'
 import { formatPhoneForUi } from '../../../shared/utils/phoneUtils'
@@ -73,11 +75,30 @@ export const StudentMenuPage: React.FC = () => {
 
       <Button
         variant="outlined"
+        startIcon={<CardGiftcardRoundedIcon />}
+        endIcon={<ChevronRightRoundedIcon />}
+        onClick={() => navigate('/student/referral')}
+        sx={{
+          mt: 2,
+          minHeight: 48,
+          width: '100%',
+          maxWidth: 300,
+          justifyContent: 'flex-start',
+          textTransform: 'none',
+          fontWeight: 600,
+          '& .MuiButton-endIcon': { ml: 'auto' },
+        }}
+      >
+        Реферальная программа
+      </Button>
+
+      <Button
+        variant="outlined"
         color="primary"
         startIcon={<LogoutRoundedIcon />}
         onClick={() => setConfirmOpen(true)}
         disabled={loading}
-        sx={{ mt: 2, minHeight: 48, width: '100%', maxWidth: 300 }}
+        sx={{ minHeight: 48, width: '100%', maxWidth: 300 }}
       >
         Выйти
       </Button>

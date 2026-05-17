@@ -29,6 +29,7 @@ import FamilyRestroomOutlinedIcon from '@mui/icons-material/FamilyRestroomOutlin
 import AccountBalanceOutlinedIcon from '@mui/icons-material/AccountBalanceOutlined'
 import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined'
 import GridViewOutlinedIcon from '@mui/icons-material/GridViewOutlined'
+import CardGiftcardOutlinedIcon from '@mui/icons-material/CardGiftcardOutlined'
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded'
 
 const logo = '/YadroSide.png'
@@ -104,6 +105,12 @@ export function AppLayout() {
         icon: <GridViewOutlinedIcon sx={{ width: NAV.iconSize, height: NAV.iconSize }} />,
         path: '/slots',
         sectionKey: 'slots' as const,
+      },
+      {
+        label: 'Реферальная программа',
+        icon: <CardGiftcardOutlinedIcon sx={{ width: NAV.iconSize, height: NAV.iconSize }} />,
+        path: '/referral',
+        sectionKey: 'referralProgram' as const,
       },
       {
         label: 'Сессии входа',
@@ -183,9 +190,9 @@ export function AppLayout() {
             if (isMobile) setMobileOpen(false)
           }}
           sx={{
-            height: 36,
+            height: 48,
             width: 'auto',
-            maxWidth: 220,
+            maxWidth: 240,
             objectFit: 'contain',
             cursor: 'pointer',
             userSelect: 'none',

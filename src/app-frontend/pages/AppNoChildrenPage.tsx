@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Box, Button, Typography } from '@mui/material'
+import { Box, Button, Stack, Typography } from '@mui/material'
 import FamilyRestroomRoundedIcon from '@mui/icons-material/FamilyRestroomRounded'
+import PersonOutlineRoundedIcon from '@mui/icons-material/PersonOutlineRounded'
 import { useAppAuthStore } from '../store/appAuthStore'
 import { AppShell } from '../components/AppShell'
 import { LogoutConfirmDialog } from '../components/LogoutConfirmDialog'
@@ -56,14 +57,26 @@ export const AppNoChildrenPage: React.FC = () => {
           пользоваться приложением.
         </Typography>
 
-        <Button
-          variant="outlined"
-          color="primary"
-          onClick={() => setConfirmOpen(true)}
-          disabled={loading}
-        >
-          Выйти
-        </Button>
+        <Stack spacing={1.5} sx={{ width: '100%', maxWidth: 280 }}>
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<PersonOutlineRoundedIcon />}
+            onClick={() => navigate('/parent/settings')}
+            sx={{ minHeight: 48 }}
+          >
+            Мой профиль
+          </Button>
+          <Button
+            variant="outlined"
+            color="primary"
+            onClick={() => setConfirmOpen(true)}
+            disabled={loading}
+            sx={{ minHeight: 48 }}
+          >
+            Выйти
+          </Button>
+        </Stack>
       </Box>
 
       <LogoutConfirmDialog

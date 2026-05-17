@@ -3,10 +3,10 @@ import { Outlet, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { Box, IconButton, Typography } from '@mui/material'
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded'
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined'
-import SchoolRoundedIcon from '@mui/icons-material/SchoolRounded'
-import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded'
-import AcUnitRoundedIcon from '@mui/icons-material/AcUnitRounded'
-import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
+import AutoStoriesOutlinedIcon from '@mui/icons-material/AutoStoriesOutlined'
+import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined'
+import PauseCircleOutlinedIcon from '@mui/icons-material/PauseCircleOutlined'
+import MenuOutlinedIcon from '@mui/icons-material/MenuOutlined'
 import { BottomTabBar } from '../../components/BottomTabBar'
 import type { BottomTab } from '../../components/BottomTabBar'
 import { SwitchChildDialog } from '../../components/SwitchChildDialog'
@@ -95,25 +95,25 @@ export const ParentLayout: React.FC = () => {
             {
               key: 'performance',
               label: 'Успеваемость',
-              icon: <SchoolRoundedIcon fontSize="inherit" />,
+              icon: <AutoStoriesOutlinedIcon fontSize="inherit" />,
               path: `/parent/${studentIdFromUrl}/performance`,
             },
             {
               key: 'schedule',
               label: 'Расписание',
-              icon: <CalendarMonthRoundedIcon fontSize="inherit" />,
+              icon: <CalendarTodayOutlinedIcon fontSize="inherit" />,
               path: `/parent/${studentIdFromUrl}/schedule`,
             },
             {
               key: 'freezing',
               label: 'Заморозка',
-              icon: <AcUnitRoundedIcon fontSize="inherit" />,
+              icon: <PauseCircleOutlinedIcon fontSize="inherit" />,
               path: `/parent/${studentIdFromUrl}/freezing`,
             },
             {
               key: 'menu',
               label: 'Меню',
-              icon: <MenuRoundedIcon fontSize="inherit" />,
+              icon: <MenuOutlinedIcon fontSize="inherit" />,
               path: `/parent/${studentIdFromUrl}/menu`,
             },
           ]

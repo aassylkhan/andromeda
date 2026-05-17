@@ -16,6 +16,8 @@ import { StudentSchedulePage } from '../pages/student/StudentSchedulePage'
 import { StudentResultsPage } from '../pages/student/StudentResultsPage'
 import { StudentMatchmakingPage } from '../pages/student/StudentMatchmakingPage'
 import { StudentMenuPage } from '../pages/student/StudentMenuPage'
+import { AppReferralPage } from '../pages/AppReferralPage'
+import { ReferralFormPage } from '../pages/ReferralFormPage'
 
 /**
  * Root component for the app.andromeda.kz subdomain (parents/students).
@@ -40,6 +42,9 @@ export const AppFrontendRoot: React.FC = () => (
         }
       />
 
+      {/* Public referral form */}
+      <Route path="/referralform" element={<ReferralFormPage />} />
+
       {/* Parent app */}
       <Route
         path="/parent/no-children"
@@ -54,6 +59,14 @@ export const AppFrontendRoot: React.FC = () => (
         element={
           <AppProtectedRoute requiredModes={['APP_PARENT']}>
             <ParentSettingsPage />
+          </AppProtectedRoute>
+        }
+      />
+      <Route
+        path="/parent/referral"
+        element={
+          <AppProtectedRoute requiredModes={['APP_PARENT']}>
+            <AppReferralPage backPath="/parent/settings" />
           </AppProtectedRoute>
         }
       />
@@ -79,6 +92,16 @@ export const AppFrontendRoot: React.FC = () => (
         <Route path="freezing" element={<ParentFreezingPage />} />
         <Route path="menu" element={<ParentMenuPage />} />
       </Route>
+
+      {/* Student referral */}
+      <Route
+        path="/student/referral"
+        element={
+          <AppProtectedRoute requiredModes={['APP_STUDENT']}>
+            <AppReferralPage backPath="/student/menu" />
+          </AppProtectedRoute>
+        }
+      />
 
       {/* Student app */}
       <Route

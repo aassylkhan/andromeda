@@ -14,6 +14,7 @@ export interface UserSections {
   offlineSchedule: boolean
   slots: boolean
   accounting: boolean
+  referralProgram: boolean
 }
 
 export interface User {
