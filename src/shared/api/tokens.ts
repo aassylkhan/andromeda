@@ -1,3 +1,5 @@
+import { dualStorage } from './tokenStorage'
+
 export interface Tokens {
   accessToken: string
   refreshToken: string
@@ -7,19 +9,28 @@ const ACCESS_TOKEN_KEY = 'accessToken'
 const REFRESH_TOKEN_KEY = 'refreshToken'
 
 export function setTokens({ accessToken, refreshToken }: Tokens): void {
-  localStorage.setItem(ACCESS_TOKEN_KEY, accessToken)
-  localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken)
+  dualStorage.set(ACCESS_TOKEN_KEY, accessToken)
+  dualStorage.set(REFRESH_TOKEN_KEY, refreshToken)
 }
 
 export function clearTokens(): void {
-  localStorage.removeItem(ACCESS_TOKEN_KEY)
-  localStorage.removeItem(REFRESH_TOKEN_KEY)
+  dualStorage.remove(ACCESS_TOKEN_KEY)
+  dualStorage.remove(REFRESH_TOKEN_KEY)
 }
 
 export function getAccessToken(): string | null {
-  return localStorage.getItem(ACCESS_TOKEN_KEY)
+  return dualStorage.get(ACCESS_TOKEN_KEY)
 }
 
 export function getRefreshToken(): string | null {
-  return localStorage.getItem(REFRESH_TOKEN_KEY)
+  return dualStorage.get(REFRESH_TOKEN_KEY)
+}
+
+/**
+ * Recover tokens from IndexedDB into localStorage if iOS wiped LS.
+ * Call once at app startup before any API requests.
+ */
+export async function recoverTokens(): Promise<void> {
+  await dualStorage.recover(ACCESS_TOKEN_KEY)
+  await dualStorage.recover(REFRESH_TOKEN_KEY)
 }
