@@ -1,8 +1,9 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { Box, Typography, Tabs, Tab, Paper } from '@mui/material'
 import PaymentRequests2Tab from './tabs/PaymentRequests2Tab'
 import OldPaymentRequestsTab from './tabs/OldPaymentRequestsTab'
 import ExtensionRequestsTab from './tabs/ExtensionRequestsTab'
+import ReferralPayoutRequestsTab from './tabs/ReferralPayoutRequestsTab'
 
 const AccountingPage: React.FC = () => {
   const [tab, setTab] = useState(0)
@@ -17,6 +18,8 @@ const AccountingPage: React.FC = () => {
         <Tabs
           value={tab}
           onChange={(_, v) => setTab(v)}
+          variant="scrollable"
+          scrollButtons="auto"
           sx={{
             px: 2,
             borderBottom: '1px solid rgba(145,158,171,0.12)',
@@ -31,12 +34,14 @@ const AccountingPage: React.FC = () => {
           <Tab label="Запросы на оплату 2" />
           <Tab label="Запросы на оплату" />
           <Tab label="Запросы на пролонгацию" />
+          <Tab label="Запросы рефералки" />
         </Tabs>
 
         <Box sx={{ p: 0 }}>
           {tab === 0 && <PaymentRequests2Tab />}
           {tab === 1 && <OldPaymentRequestsTab />}
           {tab === 2 && <ExtensionRequestsTab />}
+          {tab === 3 && <ReferralPayoutRequestsTab />}
         </Box>
       </Paper>
     </Box>

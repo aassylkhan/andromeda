@@ -29,6 +29,16 @@ export interface ExtensionRequestListItem {
   signatureConfirmation: string | null
 }
 
+export interface ReferralPayoutListItem {
+  id: number
+  createdAt: string
+  userFullName: string
+  amount: number
+  bankDetails: string
+  status: string
+  payoutTime: string | null
+}
+
 export interface AccountingPageResponse<T> {
   content: T[]
   page: number

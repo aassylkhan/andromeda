@@ -2,6 +2,7 @@ import { http } from '../../shared/api'
 import type {
   PaymentRequest2ListItem,
   ExtensionRequestListItem,
+  ReferralPayoutListItem,
   AccountingPageResponse,
 } from './types'
 
@@ -67,3 +68,33 @@ export const confirmErPayment = (id: number) => http.post(`/api/v1/accounting/ex
 export const denyErPayment = (id: number) => http.post(`/api/v1/accounting/extension-requests/${id}/deny-payment`)
 export const confirmErSignature = (id: number) => http.post(`/api/v1/accounting/extension-requests/${id}/confirm-signature`)
 export const denyErSignature = (id: number) => http.post(`/api/v1/accounting/extension-requests/${id}/deny-signature`)
+
+export interface ReferralPayoutListParams {
+  page?: number
+  size?: number
+  createdFrom?: string
+  createdTo?: string
+  statuses?: string[]
+}
+
+export async function getAccountingReferralPayouts(
+  params?: ReferralPayoutListParams
+): Promise<{ items: ReferralPayoutListItem[]; total: number }> {
+  const { data } = await http.get<AccountingPageResponse<ReferralPayoutListItem>>(
+    '/api/v1/accounting/referral-payouts',
+    {
+      params: {
+        page: params?.page ?? 0,
+        size: params?.size ?? 20,
+        ...(params?.createdFrom && { createdFrom: params.createdFrom }),
+        ...(params?.createdTo && { createdTo: params.createdTo }),
+        ...(params?.statuses?.length && { statuses: params.statuses }),
+      },
+      paramsSerializer: { indexes: null },
+    }
+  )
+  return { items: data.content ?? [], total: data.totalElements ?? 0 }
+}
+
+export const markReferralPayoutSent = (id: number) =>
+  http.post(`/api/v1/accounting/referral-payouts/${id}/mark-sent`)
