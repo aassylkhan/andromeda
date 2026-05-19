@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Navigate, useNavigate } from 'react-router-dom'
 import {
   Alert,
   Box,
@@ -12,12 +12,26 @@ import {
 } from '@mui/material'
 import RocketLaunchRoundedIcon from '@mui/icons-material/RocketLaunchRounded'
 import { useAppAuthStore } from '../store/appAuthStore'
+import { getAppAccessToken } from '../api/appTokens'
 import { AppShell } from '../components/AppShell'
 
 export const AppLoginPage: React.FC = () => {
   const navigate = useNavigate()
-  const { sendCode, loading, error, clearError } = useAppAuthStore()
+  const { sendCode, loading, error, clearError, user } = useAppAuthStore()
   const [phoneDigits, setPhoneDigits] = useState('')
+  const token = getAppAccessToken()
+
+  // Already authenticated — redirect to the app instead of showing login form.
+  if (token && user) {
+    switch (user.mode) {
+      case 'APP_PARENT':
+        return <Navigate to="/parent" replace />
+      case 'APP_STUDENT':
+        return <Navigate to="/student/schedule" replace />
+      case 'APP_PENDING_SELECT':
+        return <Navigate to="/select-mode" replace />
+    }
+  }
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const digits = e.target.value.replace(/\D/g, '').slice(0, 15)

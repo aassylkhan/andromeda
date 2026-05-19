@@ -5,6 +5,7 @@ import { AppCodePage } from '../pages/AppCodePage'
 import { AppSelectModePage } from '../pages/AppSelectModePage'
 import { AppNoChildrenPage } from '../pages/AppNoChildrenPage'
 import { AppProtectedRoute } from './AppProtectedRoute'
+import { AppEntryRedirect } from './AppEntryRedirect'
 import { ParentLayout } from '../pages/parent/ParentLayout'
 import { ParentPerformancePage } from '../pages/parent/ParentPerformancePage'
 import { ParentSchedulePage } from '../pages/parent/ParentSchedulePage'
@@ -27,8 +28,8 @@ import { ReferralFormPage } from '../pages/ReferralFormPage'
 export const AppFrontendRoot: React.FC = () => (
   <BrowserRouter>
     <Routes>
-      {/* Public auth pages */}
-      <Route path="/" element={<Navigate to="/login" replace />} />
+      {/* Entry point — if authenticated, go to parent/student; otherwise /login */}
+      <Route path="/" element={<AppEntryRedirect />} />
       <Route path="/login" element={<AppLoginPage />} />
       <Route path="/login/code" element={<AppCodePage />} />
 
@@ -119,7 +120,7 @@ export const AppFrontendRoot: React.FC = () => (
         <Route path="menu" element={<StudentMenuPage />} />
       </Route>
 
-      <Route path="*" element={<Navigate to="/login" replace />} />
+      <Route path="*" element={<AppEntryRedirect />} />
     </Routes>
   </BrowserRouter>
 )

@@ -102,11 +102,15 @@ export const useAppAuthStore = create<AppAuthStore>((set, get) => ({
     } catch (e: unknown) {
       const status = (e as { response?: { status?: number } })?.response?.status
       if (status === 401 || status === 403) {
+        // 401 here means the Axios interceptor already tried to refresh and
+        // failed → session is truly invalid, clear tokens.
         clearAppTokens()
         set({ user: null, loading: false, error: null })
         return
       }
-      set({ user: null, loading: false, error: errorMessage(e, 'Не удалось загрузить профиль') })
+      // Network error / timeout / 5xx — don't clear tokens, just show error.
+      // The user can retry by reopening the app or pulling to refresh.
+      set({ loading: false, error: errorMessage(e, 'Не удалось загрузить профиль') })
     }
   },
 
