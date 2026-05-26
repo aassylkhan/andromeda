@@ -25,6 +25,7 @@ import {
 } from '../../entities/lookup/api'
 import type { LookupDto, ProductDetailDto } from '../../entities/lookup/types'
 import { createPaymentRequest2 } from '../../entities/payment-request-2/api'
+import { getBlockedDates } from '../../entities/forbidden-date/api'
 
 /**
  * TZ-11: «Записать на обучение 2». A parallel enrollment flow that splits the
@@ -121,6 +122,8 @@ export const EnrollStudent2Dialog: React.FC<EnrollStudent2DialogProps> = ({
 
   const [submitting, setSubmitting] = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
+  const [forbiddenDates, setForbiddenDates] = useState<Set<string>>(new Set())
+  const [dateForbiddenError, setDateForbiddenError] = useState<string | null>(null)
 
   const minDate = useMemo(() => {
     const d = new Date()
@@ -193,8 +196,9 @@ export const EnrollStudent2Dialog: React.FC<EnrollStudent2DialogProps> = ({
       getLearningLanguages(),
       getOffices(),
       getLearningHourOptions(),
+      getBlockedDates(),
     ])
-      .then(([exp, par, gr, prod, lang, off, ho]) => {
+      .then(([exp, par, gr, prod, lang, off, ho, blocked]) => {
         setExperts(exp)
         setParents(par)
         setGrades(gr)
@@ -202,6 +206,7 @@ export const EnrollStudent2Dialog: React.FC<EnrollStudent2DialogProps> = ({
         setLanguages(lang)
         setOffices(off)
         setHourOptions(ho)
+        setForbiddenDates(new Set(blocked))
       })
       .catch(() => enqueueSnackbar('Ошибка загрузки справочников', { variant: 'error' }))
       .finally(() => setLoadingLookups(false))
@@ -225,8 +230,19 @@ export const EnrollStudent2Dialog: React.FC<EnrollStudent2DialogProps> = ({
       setFee('')
       setSubmitting(false)
       setConfirmOpen(false)
+      setForbiddenDates(new Set())
+      setDateForbiddenError(null)
     }
   }, [open])
+
+  const handleOfferStartDateChange = (value: string) => {
+    setOfferStartDate(value)
+    if (value && forbiddenDates.has(value)) {
+      setDateForbiddenError('Эта дата недоступна для начала обучения')
+    } else {
+      setDateForbiddenError(null)
+    }
+  }
 
   const numberFromInput = (val: string): number | '' => {
     if (val === '') return ''
@@ -243,6 +259,8 @@ export const EnrollStudent2Dialog: React.FC<EnrollStudent2DialogProps> = ({
     !!officeId &&
     !!learningHourOptionId &&
     !!offerStartDate &&
+    !dateForbiddenError &&
+    !forbiddenDates.has(offerStartDate) &&
     typeof classdays === 'number' &&
     classdays > 0 &&
     typeof freezings === 'number' &&
@@ -425,9 +443,12 @@ export const EnrollStudent2Dialog: React.FC<EnrollStudent2DialogProps> = ({
                 label="Дата начала обучения"
                 type="date"
                 value={offerStartDate}
-                onChange={(e) => setOfferStartDate(e.target.value)}
+                onChange={(e) => handleOfferStartDateChange(e.target.value)}
                 fullWidth
                 size="small"
+                required
+                error={!!dateForbiddenError}
+                helperText={dateForbiddenError ?? 'Не раньше послезавтра; недоступные даты запрещены'}
                 slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: minDate } }}
               />
 

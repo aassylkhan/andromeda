@@ -17,7 +17,7 @@ import {
 } from '@mui/material'
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useSnackbar } from 'notistack'
 import { useAuthStore } from '../../entities/auth'
 import { getOffices } from '../../entities/lookup/api'
@@ -74,10 +74,12 @@ function groupRowsByLanguage(matrix: SlotMatrixResponse | null): LanguageGroup[]
 
 export default function SlotsPage() {
   const { enqueueSnackbar } = useSnackbar()
+  const navigate = useNavigate()
   const user = useAuthStore((s) => s.user)
   const [searchParams, setSearchParams] = useSearchParams()
 
   const canEdit = useMemo(() => hasAnyRole(user, ['head', 'director']), [user])
+  const canManageForbiddenDates = canEdit
 
   const [offices, setOffices] = useState<LookupDto[]>([])
   const [officesLoaded, setOfficesLoaded] = useState(false)
@@ -88,6 +90,7 @@ export default function SlotsPage() {
 
   const [editMode, setEditMode] = useState(false)
   const [noAccessOpen, setNoAccessOpen] = useState(false)
+  const [forbiddenAccessOpen, setForbiddenAccessOpen] = useState(false)
   const [editTarget, setEditTarget] = useState<EditSlotTarget | null>(null)
 
   // ----- offices: load once and pick default office -----
@@ -169,6 +172,14 @@ export default function SlotsPage() {
     setSelectedOfficeId(newId)
   }
 
+  const handleForbiddenDatesClick = () => {
+    if (!canManageForbiddenDates) {
+      setForbiddenAccessOpen(true)
+      return
+    }
+    navigate('/slots/forbidden-dates')
+  }
+
   const handleToggleEdit = () => {
     if (editMode) {
       setEditMode(false)
@@ -239,6 +250,14 @@ export default function SlotsPage() {
           Слоты
         </Typography>
         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
+          <Button
+            variant="outlined"
+            onClick={handleForbiddenDatesClick}
+            disabled={editMode}
+            sx={{ whiteSpace: 'nowrap' }}
+          >
+            Недоступные даты
+          </Button>
           <FormControl size="small" sx={{ minWidth: 220 }} disabled={editMode}>
             <InputLabel>Филиал</InputLabel>
             <Select
@@ -566,6 +585,25 @@ export default function SlotsPage() {
         </DialogContent>
         <DialogActions>
           <Button variant="contained" onClick={() => setNoAccessOpen(false)}>
+            ОК
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={forbiddenAccessOpen}
+        onClose={() => setForbiddenAccessOpen(false)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>Ошибка</DialogTitle>
+        <DialogContent>
+          <Typography variant="body1" sx={{ mt: 1 }}>
+            Вы не имеете доступ к этому разделу
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button variant="contained" onClick={() => setForbiddenAccessOpen(false)}>
             ОК
           </Button>
         </DialogActions>

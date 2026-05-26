@@ -13,6 +13,7 @@ import ParentsPage from '../pages/parents/ParentsPage'
 import AccountingPage from '../pages/accounting/AccountingPage'
 import OfflineSchedulePage from '../pages/schedule/OfflineSchedulePage'
 import SlotsPage from '../pages/slots/SlotsPage'
+import ForbiddenDatesPage from '../pages/slots/ForbiddenDatesPage'
 import ReferralProgramPage from '../pages/referral/ReferralProgramPage'
 
 const STUDENTS_PARENTS_ROLES = ['director', 'head', 'curator', 'expert']
@@ -115,6 +116,14 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute requiredRoles={SLOTS_ROLES} requiredSections={['slots']}>
             <SlotsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'slots/forbidden-dates',
+        element: (
+          <ProtectedRoute requiredRoles={['director', 'head']} requiredSections={['slots']}>
+            <ForbiddenDatesPage />
           </ProtectedRoute>
         ),
       },
