@@ -63,6 +63,26 @@ export async function getStudentDetail(studentId: number): Promise<StudentDetail
   return data
 }
 
+export interface UpdateStudentAcademicInfoData {
+  gradeId: number
+  learningLanguageId: number
+  productId: number
+  officeId: number
+  learningHourOptionId: number
+  offerStartDate: string
+}
+
+export async function updateStudentAcademicInfo(
+  studentId: number,
+  payload: UpdateStudentAcademicInfoData
+): Promise<StudentDetail> {
+  const { data } = await http.patch<StudentDetail>(
+    `/api/v1/students/${studentId}/academic-info`,
+    payload
+  )
+  return data
+}
+
 export async function searchStudentsLookup(q?: string): Promise<StudentLookupItem[]> {
   const { data } = await http.get<StudentLookupItem[]>('/api/v1/students/lookup', {
     params: q ? { q } : {},

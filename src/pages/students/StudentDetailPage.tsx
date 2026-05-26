@@ -27,6 +27,8 @@ import { EnrollStudentDialog } from '../../features/student-dialogs/EnrollStuden
 import { EnrollStudent2Dialog } from '../../features/student-dialogs/EnrollStudent2Dialog'
 import { PurchaseHoursDialog } from '../../features/student-dialogs/PurchaseHoursDialog'
 import { ExtensionRequestDialog } from '../../features/student-dialogs/ExtensionRequestDialog'
+import { EditStudentDialog } from '../../features/student-dialogs/EditStudentDialog'
+import { SHOW_PAYMENT_REQUEST_BUTTON } from '../../shared/config/featureFlags'
 
 const Field: React.FC<{ label: string; value: React.ReactNode }> = ({ label, value }) => (
   <Box sx={{ mb: 1.5 }}>
@@ -57,6 +59,7 @@ const StudentDetailPage: React.FC = () => {
   const [alreadyEnrolledOpen, setAlreadyEnrolledOpen] = useState(false)
   const [purchaseOpen, setPurchaseOpen] = useState(false)
   const [extensionOpen, setExtensionOpen] = useState(false)
+  const [editOpen, setEditOpen] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
   const requestIdRef = useRef(0)
 
@@ -189,8 +192,13 @@ const StudentDetailPage: React.FC = () => {
 
         {/* Buttons */}
         <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', alignItems: 'center' }}>
-          <Button variant="contained" onClick={handleEnrollClick}>
-            Записать на обучение
+          {SHOW_PAYMENT_REQUEST_BUTTON && (
+            <Button variant="contained" onClick={handleEnrollClick}>
+              Записать на обучение
+            </Button>
+          )}
+          <Button variant="outlined" onClick={() => setEditOpen(true)}>
+            Редактировать
           </Button>
           <Button variant="contained" color="primary" onClick={handleEnroll2Click}>
             Записать на обучение 2
@@ -231,13 +239,24 @@ const StudentDetailPage: React.FC = () => {
         </Box>
       </Paper>
 
-      {/* Enrollment Dialog */}
-      <EnrollStudentDialog
-        open={enrollOpen}
-        onClose={() => setEnrollOpen(false)}
+      {SHOW_PAYMENT_REQUEST_BUTTON && (
+        <EnrollStudentDialog
+          open={enrollOpen}
+          onClose={() => setEnrollOpen(false)}
+          student={student}
+          onSuccess={() => {
+            setEnrollOpen(false)
+            loadStudent()
+          }}
+        />
+      )}
+
+      <EditStudentDialog
+        open={editOpen}
+        onClose={() => setEditOpen(false)}
         student={student}
         onSuccess={() => {
-          setEnrollOpen(false)
+          setEditOpen(false)
           loadStudent()
         }}
       />

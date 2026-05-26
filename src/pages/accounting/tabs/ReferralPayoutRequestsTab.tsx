@@ -53,7 +53,7 @@ const maskBankDetails = (details: string): string => {
   return details
 }
 
-const DEFAULT_FILTER: ReferralPayoutFilters = { statuses: ['В обработке'] }
+const emptyFilters: ReferralPayoutFilters = {}
 
 const ReferralPayoutRequestsTab: React.FC = () => {
   const { enqueueSnackbar } = useSnackbar()
@@ -65,7 +65,7 @@ const ReferralPayoutRequestsTab: React.FC = () => {
   const [page, setPage] = useState(0)
   const [size, setSize] = useState(20)
   const [total, setTotal] = useState(0)
-  const [filters, setFilters] = useState<ReferralPayoutFilters>(DEFAULT_FILTER)
+  const [filters, setFilters] = useState<ReferralPayoutFilters>(emptyFilters)
   const [filterOpen, setFilterOpen] = useState(false)
 
   const [confirmDialog, setConfirmDialog] = useState<number | null>(null)

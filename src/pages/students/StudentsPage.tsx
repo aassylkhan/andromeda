@@ -207,7 +207,7 @@ const StudentsPage: React.FC = () => {
                     }}
                     onClick={() => navigate(`/students/${s.studentId}`)}
                   >
-                    <TableCell>{s.studentId}</TableCell>
+                    <TableCell>{s.userId}</TableCell>
                     <TableCell>{s.lastName} {s.firstName}</TableCell>
                     <TableCell>{s.phoneNumber ? formatPhoneForUi(s.phoneNumber) : '—'}</TableCell>
                     <TableCell>{s.gradeName ?? '—'}</TableCell>

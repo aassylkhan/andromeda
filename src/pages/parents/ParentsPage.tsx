@@ -179,7 +179,7 @@ const ParentsPage: React.FC = () => {
                     hover
                     sx={{ '& td': { borderBottom: '1px solid rgba(145,158,171,0.12)', px: 2 } }}
                   >
-                    <TableCell>{p.parentId}</TableCell>
+                    <TableCell>{p.userId}</TableCell>
                     <TableCell>{p.lastName} {p.firstName}</TableCell>
                     <TableCell>{p.phoneNumber ? formatPhoneForUi(p.phoneNumber) : '—'}</TableCell>
                     <TableCell align="right">
