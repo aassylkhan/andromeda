@@ -26,6 +26,7 @@ export interface AppChild {
   firstName: string
   lastName: string
   fullName: string
+  freezings: number
 }
 
 export async function appSendCode(phoneNumber: string): Promise<void> {

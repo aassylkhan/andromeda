@@ -11,6 +11,7 @@ interface ChildrenState {
 
 interface ChildrenActions {
   load: () => Promise<void>
+  setChildFreezings: (studentId: number, freezings: number) => void
   reset: () => void
 }
 
@@ -34,6 +35,13 @@ export const useParentChildrenStore = create<ChildrenStore>((set) => ({
       set({ error: msg, loading: false })
     }
   },
+
+  setChildFreezings: (studentId, freezings) =>
+    set((state) => ({
+      children: state.children.map((child) =>
+        child.studentId === studentId ? { ...child, freezings } : child
+      ),
+    })),
 
   reset: () => set({ children: [], loaded: false, loading: false, error: null }),
 }))
